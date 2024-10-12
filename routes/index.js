@@ -63,12 +63,17 @@ router.post('/login', validateLoginInput, async (req, res) => {
     // Create a session
     req.session.userId = user._id;
     req.session.username = user.username;
-    res.json({ message: 'Login successful', username: user.username });
+    res.json({ success: true, message: 'Login successful', username: user.username });
 
   } catch (error) {
     console.error('Login error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred during login' });
   }
+
+});
+
+
+router.get('/private_chat', (res, req) => {
 
 });
 

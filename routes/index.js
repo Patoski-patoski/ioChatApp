@@ -5,6 +5,8 @@ import { Router } from 'express';
 import { validateSignupInput, validateLoginInput } from "../middleware/validation.js";
 import { connectToDataBase, getClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
+import isAuthenticated from "../middleware/auth.js";
+import session from 'express-session';
 
 const router = Router();
 
@@ -12,6 +14,14 @@ const router = Router();
 router.get('/', (req, res, next) => {
   res.sendFile(join(process.cwd(), 'public', 'index.html'));
 });
+router.get('/signup', (req, res) => {
+  res.sendFile(join(process.cwd(), 'public', 'signup.html'));
+});
+
+router.get('/login', (req, res) => {
+  res.sendFile(join(process.cwd(), 'public', 'login.html'));
+});
+
 router.post('/signup', validateSignupInput, async (req, res, next) => {
   const { username, sex, password } = req.body;
   try {
@@ -38,7 +48,6 @@ router.post('/signup', validateSignupInput, async (req, res, next) => {
   }
 });
 
-
 router.post('/login', validateLoginInput, async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -48,22 +57,16 @@ router.post('/login', validateLoginInput, async (req, res) => {
     const usersCollection = db.collection("users");
 
     const user = await usersCollection.findOne({ username });
-
-    if (!user) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json(
-        { error: "Invalid username or password" });
-    }
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+
+    if (!user || !isPasswordValid) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json(
         { error: "Invalid username or password" });
     }
-
     // Create a session
     req.session.userId = user._id;
     req.session.username = user.username;
-    res.json({ success: true, message: 'Login successful', username: user.username });
+    res.json({ message: 'Login successful', username: user.username });
 
   } catch (error) {
     console.error('Login error:', error);
@@ -72,17 +75,51 @@ router.post('/login', validateLoginInput, async (req, res) => {
 
 });
 
+router.post('/add_friend', isAuthenticated, async (req, res) => {
+  const { username } = req.body;
+  try {
+    await connectToDataBase();
+    const client = getClient();
+    const db = client.db("chatapp");
+    const usersCollection = db.collection("users");
+    const user = await usersCollection.findOne({ username: username });
 
-router.get('/private_chat', (res, req) => {
+    if (!user.username) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json(
+        { error: "Cannot find friend with username" });
+    }
+    res.status(HTTP_STATUS.OK).json({ message: "Friend found", username: user.username });
 
+  } catch (error) {
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
+      { error: 'An error occurred during post' });
+  }
 });
 
-router.get('/signup', (req, res) => {
-  res.sendFile(join(process.cwd(), 'public', 'signup.html'));
+router.get('/private_chat', (req, res) => {
+  const data = {friendUsername: 'Matthew', status: 'online'};
+  res.render('private_chat', data);
 });
 
-router.get('/login', (req, res) => {
-  res.sendFile(join(process.cwd(), 'public', 'login.html'));
+
+// API route to check authentication status
+router.get('/api/auth-status', (req, res) => {
+  if (req.session && req.session.userId) {
+    res.json({
+      isAuthenticated: true,
+      sessionID: req.sessionID,
+      sessionId: req.session.userId,
+      sessionUsername: req.session.username
+    });
+  } else {
+    res.json({ isAuthenticated: false });
+  }
 });
+
+
+router.get('/add_friend', isAuthenticated, (res, req) => {
+  req.sendFile(join(process.cwd()), 'public', 'add_friend.html');
+});
+
 
 export default router;

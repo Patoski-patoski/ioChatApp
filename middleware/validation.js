@@ -1,35 +1,45 @@
-// middleware/validation.js
 import { HTTP_STATUS } from '../public/javascripts/constants.js';
 
 export function validateSignupInput(req, res, next) {
     const { username, sex, password, confirm_password } = req.body;
 
-    if (!username || !sex || !password) {
+    if (!username || !sex || !password || !confirm_password) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
             { error: 'Missing required fields' });
     }
 
-    if (typeof username !== 'string' || username.length < 3) {
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirm_password.trim();
+
+    if (typeof trimmedUsername !== 'string' || trimmedUsername.length < 3 || trimmedUsername.length > 50) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
-            { error: 'Username must be a string with at least 3 characters' });
+            { error: 'Invalid username format' });
     }
 
-    if (typeof password !== 'string' || password.length < 6) {
+    if (typeof trimmedPassword !== 'string' || trimmedPassword.length < 6 || trimmedPassword.length > 100) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
-            { error: 'Password must be a string with at least 6 characters' });
+            { error: 'Invalid password format' });
     }
 
-    if (confirm_password !== password) {
-        return res.status(HTTP_STATUS.CONFLICT).json(
-            { error: "Password does not match" });
+    if (trimmedConfirmPassword !== trimmedPassword) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+            { error: 'Passwords do not match' });
     }
 
-    if (sex !== 'male' && sex !== 'female' && sex !== 'other') {
+    if (!['male', 'female', 'other'].includes(sex)) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
-            { error: 'Sex must be either "male", "female", or "other"' });
+            { error: 'Invalid sex value' });
     }
+
+    // Assign trimmed values back to req.body
+    req.body.username = trimmedUsername;
+    req.body.password = trimmedPassword;
+    req.body.confirm_password = trimmedConfirmPassword;
+
     next();
 }
+
 export function validateLoginInput(req, res, next) {
     const { username, password } = req.body;
 
@@ -38,14 +48,22 @@ export function validateLoginInput(req, res, next) {
             { error: 'Missing required fields' });
     }
 
-    if (typeof username !== 'string' || username.length < 3) {
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+
+    if (typeof trimmedUsername !== 'string' || trimmedUsername.length < 3 || trimmedUsername.length > 50) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
-            { error: 'Username must be a string with at least 3 characters' });
+            { error: 'Invalid username format' });
     }
 
-    if (typeof password !== 'string' || password.length < 6) {
+    if (typeof trimmedPassword !== 'string' || trimmedPassword.length < 6 || trimmedPassword.length > 100) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
-            { error: 'Password must be a string with at least 6 characters' });
+            { error: 'Invalid password format' });
     }
+
+    // Assign trimmed values back to req.body
+    req.body.username = trimmedUsername;
+    req.body.password = trimmedPassword;
+
     next();
 }

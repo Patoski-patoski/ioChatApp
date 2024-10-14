@@ -82,12 +82,13 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
     const client = getClient();
     const db = client.db("chatapp");
     const usersCollection = db.collection("users");
-    const user = await usersCollection.findOne({ username: username });
+    const user = await usersCollection.findOne({ username });
 
-    if (!user.username) {
+    if (!user) {
       return res.status(HTTP_STATUS.NOT_FOUND).json(
         { error: "Cannot find friend with username" });
     }
+
     res.status(HTTP_STATUS.OK).json({ message: "Friend found", username: user.username });
 
   } catch (error) {
@@ -97,7 +98,9 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 });
 
 router.get('/private_chat', (req, res) => {
-  const data = {friendUsername: 'Matthew', status: 'online'};
+  const friendUsername = req.query.friendUsername;
+  console.log(friendUsername);  
+  const data = {friendUsername, status: 'online'};
   res.render('private_chat', data);
 });
 

@@ -30,7 +30,8 @@ async function verifyFriend(event) {
         const data = await response.json();
         if (response.ok) {
             console.log('Friend found:', data.message);
-            window.location.href = '/private_chat';
+            console.log('Friend found:', data.username);
+            window.location.href = `/private_chat?friendUsername=${encodeURI(data.username)}`;
         } else {
             console.error('Friend search failed:', data.error);
             document.getElementById('error-message').textContent = data.error;

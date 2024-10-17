@@ -3,10 +3,11 @@ import { join } from 'path';
 import bcrypt from "bcrypt";
 import { Router } from 'express';
 import { validateSignupInput, validateLoginInput } from "../middleware/validation.js";
-import { connectToDataBase, getClient } from './database.js';
+import { connectToDataBase, getClient, redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
-import session from 'express-session';
+import { v4 as uuid4 } from 'uuid';
+import { render } from 'jade';
 
 const router = Router();
 
@@ -70,9 +71,20 @@ router.post('/login', validateLoginInput, async (req, res) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred during login' });
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
+      { error: 'An error occurred during login' });
   }
+});
 
+router.get('/logout', isAuthenticated, async (req, res) => {
+  if (req.session && req.session.userId) {
+    req.session.destroy();
+    res.status(HTTP_STATUS.OK).sendFile(
+        join(process.cwd(), 'public', 'index.html'));
+
+  } else {
+    res.json({ message: "Not Authenticated" });
+  }
 });
 
 router.post('/add_friend', isAuthenticated, async (req, res) => {
@@ -88,7 +100,6 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       return res.status(HTTP_STATUS.NOT_FOUND).json(
         { error: "Cannot find friend with username" });
     }
-
     res.status(HTTP_STATUS.OK).json({ message: "Friend found", username: user.username });
 
   } catch (error) {
@@ -97,13 +108,19 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
   }
 });
 
-router.get('/private_chat', (req, res) => {
-  const friendUsername = req.query.friendUsername;
-  console.log(friendUsername);  
-  const data = {friendUsername, status: 'online'};
-  res.render('private_chat', data);
+router.get('/add_friend', isAuthenticated, (req, res) => {
+  const username = req.query.username;
+  // res.sendFile(join(process.cwd()), 'public', 'add_friend.html');
+  res.render('add_friend', {username});
+
 });
 
+router.get('/rooms', isAuthenticated, (req, res) => {
+  const friendUsername = req.query.friendUsername;
+  const uniqueCode = req.sessionID.substring(0, 7);
+  const data = { friendUsername, uniqueCode };
+  res.render('rooms', data);
+});
 
 // API route to check authentication status
 router.get('/api/auth-status', (req, res) => {
@@ -118,11 +135,5 @@ router.get('/api/auth-status', (req, res) => {
     res.json({ isAuthenticated: false });
   }
 });
-
-
-router.get('/add_friend', isAuthenticated, (res, req) => {
-  req.sendFile(join(process.cwd()), 'public', 'add_friend.html');
-});
-
 
 export default router;

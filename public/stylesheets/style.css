@@ -1,8 +1,138 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+General page styling body {
+  margin: 0;
+  padding: 0;
+  background-color: #010409;
+  /* Dark background */
+  font-family: Arial, sans-serif;
+  color: #9198a1;
+  /* Primary text color */
 }
 
-a {
-  color: #00B7FF;
+/* Main container */
+main {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Form for joining room */
+.form-join {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #161b22;
+  /* Slightly lighter dark background */
+  border-radius: 8px;
+}
+
+.form-join input {
+  background-color: #0d1117;
+  /* Darker input background */
+  color: #c9d1d9;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  outline: none;
+  font-size: 16px;
+}
+
+.form-join button {
+  background-color: #238636;
+  /* Green button */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.form-join button:hover {
+  background-color: #2ea043;
+  /* Hover state for button */
+}
+
+/* Chat display area */
+.chat-display {
+  flex-grow: 1;
+  list-style-type: none;
+  margin: 0;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #0d1117;
+  /* Chat background */
+  border-radius: 8px;
+  color: #c9d1d9;
+  /* Text color */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.chat-display li {
+  padding: 8px;
+  margin-bottom: 10px;
+  background-color: #161b22;
+  /* Message background */
+  border-radius: 6px;
+}
+
+/* User and room list */
+.user-list,
+.room-list,
+.activity {
+  color: #58a6ff;
+  /* Highlight color for lists */
+  margin-bottom: 10px;
+}
+
+/* Form for sending messages */
+.form-msg {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #161b22;
+  border-radius: 8px;
+}
+
+.form-msg input {
+  flex-grow: 1;
+  background-color: #0d1117;
+  color: #c9d1d9;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  outline: none;
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+.form-msg button {
+  background-color: #238636;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.form-msg button:hover {
+  background-color: #2ea043;
+}
+
+/* Scrollbars */
+.chat-display::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-display::-webkit-scrollbar-thumb {
+  background-color: #238636;
+  border-radius: 4px;
+}
+
+.chat-display::-webkit-scrollbar-track {
+  background-color: #0d1117;
 }

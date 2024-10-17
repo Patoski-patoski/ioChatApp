@@ -1,7 +1,7 @@
 //app.js
 import logger from 'morgan';
 import { fileURLToPath } from 'url';
-import { createServer } from 'http';
+// import { createServer } from 'http';
 import { dirname, join } from 'path';
 import createError from 'http-errors';
 import session from 'express-session';
@@ -19,16 +19,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const server = createServer(app);
 
-setupSocketIO(server);
+const expresServer = app.listen((config.server.port), () => {
+  console.log(`Listening live from http://${config.server.hostname}:${config.server.port}`);
+});
+
+
+setupSocketIO(expresServer);
 
 async function initializeDatabases() {
   try {
     await connectToDataBase();
     await connectRedis();
-
-    /* Start serveronly after successful database connections */
 
   } catch (error) {
     console.error('Failed to connect to databases:', error);
@@ -40,6 +42,8 @@ initializeDatabases();
 
 // view engine setup
 app.set('views', join(__dirname, 'views'));
+console.log(join(__dirname, 'views'));
+
 app.set('view engine', 'ejs');
 
 
@@ -62,7 +66,7 @@ app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  next(createError(404));
+  next(createError(404)); 
 });
 
 // error handler
@@ -74,10 +78,7 @@ app.use(function (err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error', err.message);
-});
-
-server.listen((config.server.port), () => {
-  console.log(`Listening live from http://${config.server.hostname}:${config.server.port}`);
+  res.render('error');
 });
 
 

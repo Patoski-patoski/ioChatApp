@@ -16,7 +16,7 @@ export default {
     session: {
         secret: process.env.SESSION_SECRET,
         cookie: {
-            maxAge: 0.005 * 60 * 60 * 1000, /* estimated 7.5 minutes */
+            maxAge: 12 * 60 * 60 * 1000, /* estimated 12 hours */
             secure: process.env.NODE_ENV === 'production',
             httpOnly: true,
         }

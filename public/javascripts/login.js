@@ -16,8 +16,8 @@ async function handleLogin(event) {
 
         const data = await response.json();
         if (response.ok) {
-            console.log('Login successful:', data.success);
-            window.location.href = '/add_friend.html';
+            console.log('Login successful:');
+            window.location.href = `/add_friend?username=${encodeURI(data.username)}`;
         } else {
             console.error('Login failed:', data.error);
             document.getElementById('error-message').textContent = data.error;

@@ -7,24 +7,24 @@ import { connectToDataBase, getClient, redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
 import { v4 as uuid4 } from 'uuid';
-import { render } from 'jade';
 
 const router = Router();
 
 /* GET home page. */
-router.get('/', (req, res, next) => {
+router.get('/', (_req, res, next) => {
   res.sendFile(join(process.cwd(), 'public', 'index.html'));
 });
-router.get('/signup', (req, res) => {
+router.get('/signup', (_req, res) => {
   res.sendFile(join(process.cwd(), 'public', 'signup.html'));
 });
 
-router.get('/login', (req, res) => {
+router.get('/login', (_req, res) => {
   res.sendFile(join(process.cwd(), 'public', 'login.html'));
 });
 
 router.post('/signup', validateSignupInput, async (req, res, next) => {
   const { username, sex, password } = req.body;
+
   try {
     await connectToDataBase();
     const client = getClient();

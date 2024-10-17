@@ -2,7 +2,7 @@ import { HTTP_STATUS } from '../public/javascripts/constants.js';
 
 export function validateSignupInput(req, res, next) {
     const { username, sex, password, confirm_password } = req.body;
-
+    
     if (!username || !sex || !password || !confirm_password) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
             { error: 'Missing required fields' });
@@ -10,7 +10,7 @@ export function validateSignupInput(req, res, next) {
 
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
-    const trimmedConfirmPassword = confirm_password.trim();
+    const trimmedConfirmPassword = confirm_password;
 
     if (typeof trimmedUsername !== 'string' || trimmedUsername.length < 3 || trimmedUsername.length > 50) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(

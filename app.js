@@ -1,7 +1,6 @@
 //app.js
 import logger from 'morgan';
 import { fileURLToPath } from 'url';
-// import { createServer } from 'http';
 import { dirname, join } from 'path';
 import createError from 'http-errors';
 import session from 'express-session';

@@ -3,13 +3,14 @@
 // Initialize socket connection
 const socket = io('ws://localhost:3000')
 
-const msgInput = document.querySelector('#message')
-const nameInput = document.querySelector('#name')
-const chatRoom = document.querySelector('#room')
-const activity = document.querySelector('.activity')
-const usersList = document.querySelector('.user-list')
-const roomList = document.querySelector('.room-list')
-const chatDisplay = document.querySelector('.chat-display')
+const msgInput = document.getElementById('message');
+const nameInput = document.getElementById('name');
+const chatRoom = document.getElementById('room');
+
+const activity = document.querySelector('.activity');
+const usersList = document.querySelector('.user-list');
+const roomList = document.querySelector('.room-list');
+const chatDisplay = document.querySelector('.chat-display');
 
 function sendMessage(e) {
     e.preventDefault()
@@ -18,15 +19,15 @@ function sendMessage(e) {
             name: nameInput.value,
             text: msgInput.value
         })
-        msgInput.value = ""
+        msgInput.value = "";
     }
-    msgInput.focus()
+    msgInput.focus();
 }
-
 function enterRoom(e) {
     e.preventDefault();
-    alert('clicked');
     if (nameInput.value && chatRoom.value) {
+        // clear chat display before joining new room
+        chatDisplay.innerHTML = '';
         socket.emit('enterRoom', {
             name: nameInput.value,
             room: chatRoom.value
@@ -44,14 +45,48 @@ msgInput.addEventListener('keypress', () => {
     socket.emit('activity', nameInput.value)
 })
 
-// Listen for messages 
 socket.on("message", (data) => {
-    activity.textContent = ""
-    const { name, text, time } = data
-    const li = document.createElement('li')
-    li.className = 'post'
-    if (name === nameInput.value) li.className = 'post post--left'
-    if (name !== nameInput.value && name !== 'Admin') li.className = 'post post--right'
+    activity.textContent = "";
+    const { name, text, time } = data;
+    const li = document.createElement('li');
+    li.className = 'post';
+
+    // Admin messages centered
+    if (name === 'Admin') {
+        li.classList.add('post--admin');
+        li.innerHTML = `<div class="post__text">${text}</div>`;
+    }
+    // Messages from "You" (current user) aligned to the right
+    else if (name === nameInput.value) {
+        li.classList.add('post--you');
+        li.innerHTML = `<div class="post__header">
+      <span class="post__header--time"><span style="font-weight: bold;"></span> ${time}</span>
+    </div>
+    <div class="post__text">${text}</div>`;
+    }
+    // Messages from other users aligned to the left
+    else {
+        li.classList.add('post--others');
+        li.innerHTML = `<div class="post__header">
+      <span class="post__header--name">${name}</span>
+      <span class="post__header--time">${time}</span>
+    </div>
+    <div class="post__text">${text}</div>`;
+    }
+
+    // Append the message to the chat display and scroll to the bottom
+    document.querySelector('.chat-display').appendChild(li);
+    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+});
+
+// Listen for messages 
+
+function displayMessage(data) {
+    const { name, text, time } = data;
+    const li = document.createElement('li');
+    li.className = 'post';
+    if (name === nameInput.value) li.className = 'post post--left';
+    if (name !== nameInput.value && name !== 'Admin') li.className = 'post post--right';
     if (name !== 'Admin') {
         li.innerHTML = `<div class="post__header ${name === nameInput.value
             ? 'post__header--user'
@@ -60,14 +95,19 @@ socket.on("message", (data) => {
         <span class="post__header--name">${name}</span> 
         <span class="post__header--time">${time}</span> 
         </div>
-        <div class="post__text">${text}</div>`
+        <div class="post__text">${text}</div>`;
     } else {
-        li.innerHTML = `<div class="post__text">${text}</div>`
+        li.innerHTML = `<div class="post__text">${text}</div>`;
     }
-    document.querySelector('.chat-display').appendChild(li)
+    chatDisplay.appendChild(li);
+    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+}
 
-    chatDisplay.scrollTop = chatDisplay.scrollHeight
-})
+// Listen for chat history
+socket.on('chatHistory', (messages) => {
+    chatDisplay.innerHTML = '';
+    messages.forEach(displayMessage);
+});
 
 let activityTimer
 socket.on("activity", (name) => {
@@ -77,7 +117,7 @@ socket.on("activity", (name) => {
     clearTimeout(activityTimer)
     activityTimer = setTimeout(() => {
         activity.textContent = ""
-    }, 3000)
+    }, 10000)
 })
 
 socket.on('userList', ({ users }) => {
@@ -89,13 +129,17 @@ socket.on('roomList', ({ rooms }) => {
 })
 
 function showUsers(users) {
-    usersList.textContent = ''
+    usersList.textContent = '';
     if (users) {
-        usersList.innerHTML = `<em>Users in ${chatRoom.value}:</em>`
+        usersList.innerHTML = `<em>Users in ${chatRoom.value}:</em>`;
+        let count = 0;
         users.forEach((user, i) => {
-            usersList.textContent += ` ${user.name}`
-            if (users.length > 1 && i !== users.length - 1) {
-                usersList.textContent += ","
+            if (!usersList.textContent.includes(user.name)) {
+                usersList.textContent += ` ${user.name}`;
+                count += 1;
+            }
+            if (count <= 1) {
+                usersList.textContent += ",";
             }
         })
     }

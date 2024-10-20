@@ -5,19 +5,19 @@ export function validateSignupInput(req, res, next) {
     
     if (!username || !sex || !password || !confirm_password) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
-            { error: 'Missing required fields' });
+            { error: ' Missing required fields' });
     }
 
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
     const trimmedConfirmPassword = confirm_password;
 
-    if (typeof trimmedUsername !== 'string' || trimmedUsername.length < 3 || trimmedUsername.length > 50) {
+    if (typeof trimmedUsername !== 'string' || trimmedUsername.length < 3 || trimmedUsername.length > 25) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
             { error: 'Invalid username format' });
     }
 
-    if (typeof trimmedPassword !== 'string' || trimmedPassword.length < 6 || trimmedPassword.length > 100) {
+    if (typeof trimmedPassword !== 'string' || trimmedPassword.length < 6 || trimmedPassword.length > 25) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
             { error: 'Invalid password format' });
     }

@@ -41,10 +41,7 @@ initializeDatabases();
 
 // view engine setup
 app.set('views', join(__dirname, 'views'));
-console.log(join(__dirname, 'views'));
-
 app.set('view engine', 'ejs');
-
 
 app.use(logger('dev'));
 app.use(json());

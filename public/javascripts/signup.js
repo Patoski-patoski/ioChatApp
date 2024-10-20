@@ -1,11 +1,11 @@
-/* /public/javascripts/signup.js */
+//  /public/javascripts/signup.js
 
 async function handleSignup(event) {
     event.preventDefault();
     const username = document.getElementById('username').value;
     const sex = document.getElementById('sex').value;
     const password = document.getElementById('password').value;
-    
+    const confirm_password = document.getElementById('confirm_password').value;
 
     try {
         const response = await fetch('/signup', {
@@ -15,8 +15,8 @@ async function handleSignup(event) {
             },
             body: JSON.stringify({ username, password, sex, confirm_password }),
         });
-
         const data = await response.json();
+        
         if (response.ok) {
             console.log('Signup successful:');
             window.location.href = '/login'

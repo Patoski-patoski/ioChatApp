@@ -10,10 +10,19 @@
         integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+JP:wght@100..900&display=swap"
+        rel="stylesheet">
     <script defer src="/javascripts/chat.js"></script>
 
     <style>
-       
+          body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, serif;
+        }
     </style>
 </head>
 
@@ -21,7 +30,8 @@
     <main>
         <!-- Form to join the chat -->
         <form class="form-join">
-            <input type="text" id="name" maxlength="8" placeholder="Your name" size="8" required readonly value="<%= friendUsername %>">
+            <input type="text" id="name" maxlength="8" placeholder="Your friends name" size="8" required readonly
+                value="<%= friendUsername %>">
             <input type="text" id="room" placeholder="Chat room" size="8" required value="<%= uniqueCode %>">
             <button id="join" type="submit">Join</button>
         </form>

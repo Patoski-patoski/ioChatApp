@@ -4,7 +4,8 @@ dotenv.config();
 
 export default {
     mongodb: {
-        url: process.env.MONGODB_URI || "mongodb://localhost/chatapp"
+        url: process.env.MONGODB_URI || "mongodb://localhost/chatapp",
+        dbName: 'chatapp'
     },
     redis: {
         url: process.env.REDIS_URI || 'redis://localhost:6379'

@@ -42,11 +42,13 @@ router.post('/signup', validateSignupInput, async (req, res, next) => {
       sex,
       password: hashedPassword,
     });
-    res.redirect(301, '/login.html');
+    res.status(200).json({ message: 'Signup successful' });
+
   } catch (error) {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
       { error: 'An error occurred during signup' });
   }
+
 });
 
 router.post('/login', validateLoginInput, async (req, res) => {
@@ -67,7 +69,7 @@ router.post('/login', validateLoginInput, async (req, res) => {
     // Create a session
     req.session.userId = user._id;
     req.session.username = user.username;
-    res.json({ message: 'Login successful', username: user.username });
+    res.status(200).json({ message: 'Login successful', username: user.username });
 
   } catch (error) {
     console.error('Login error:', error);

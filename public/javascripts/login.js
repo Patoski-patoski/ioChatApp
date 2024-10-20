@@ -20,7 +20,7 @@ async function handleLogin(event) {
             window.location.href = `/add_friend?username=${encodeURI(data.username)}`;
         } else {
             console.error('Login failed:', data.error);
-            document.getElementById('error-message').textContent = data.error;cc
+            document.getElementById('error-message').textContent = data.error;
         }
     } catch (error) {
         console.error('Login error:', error);

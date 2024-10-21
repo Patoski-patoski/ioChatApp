@@ -23,7 +23,6 @@ const expresServer = app.listen((config.server.port), () => {
   console.log(`Listening live from http://${config.server.hostname}:${config.server.port}`);
 });
 
-
 setupSocketIO(expresServer);
 
 async function initializeDatabases() {
@@ -76,6 +75,5 @@ app.use(function (err, req, res, next) {
   res.render('error', err.message);
   res.render('error');
 });
-
 
 export default app;

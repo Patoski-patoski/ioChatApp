@@ -6,7 +6,6 @@ import { validateSignupInput, validateLoginInput } from "../middleware/validatio
 import { connectToDataBase, getClient, redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
-import { v4 as uuid4 } from 'uuid';
 
 const router = Router();
 
@@ -69,7 +68,9 @@ router.post('/login', validateLoginInput, async (req, res) => {
     // Create a session
     req.session.userId = user._id;
     req.session.username = user.username;
+    await redisClient.set(`user:${user.username}:status`, 'online', 'EX', 600);
     res.status(200).json({ message: 'Login successful', username: user.username });
+
 
   } catch (error) {
     console.error('Login error:', error);
@@ -82,7 +83,7 @@ router.get('/logout', isAuthenticated, async (req, res) => {
   if (req.session && req.session.userId) {
     req.session.destroy();
     res.status(HTTP_STATUS.OK).sendFile(
-        join(process.cwd(), 'public', 'index.html'));
+      join(process.cwd(), 'public', 'index.html'));
 
   } else {
     res.json({ message: "Not Authenticated" });
@@ -112,9 +113,8 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
 router.get('/add_friend', isAuthenticated, (req, res) => {
   const username = req.query.username;
-  // res.sendFile(join(process.cwd()), 'public', 'add_friend.html');
-  res.render('add_friend', {username});
-
+  console.log(username);
+  res.render('add_friend', { username });
 });
 
 router.get('/rooms', isAuthenticated, (req, res) => {
@@ -122,20 +122,6 @@ router.get('/rooms', isAuthenticated, (req, res) => {
   const uniqueCode = req.sessionID.substring(0, 7);
   const data = { friendUsername, uniqueCode };
   res.render('rooms', data);
-});
-
-// API route to check authentication status
-router.get('/api/auth-status', (req, res) => {
-  if (req.session && req.session.userId) {
-    res.json({
-      isAuthenticated: true,
-      sessionID: req.sessionID,
-      sessionId: req.session.userId,
-      sessionUsername: req.session.username
-    });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
 });
 
 export default router;

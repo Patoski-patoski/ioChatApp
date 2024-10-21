@@ -1,7 +1,7 @@
 /* /public/javascripts/add_friend.js */
 async function checkAuth() {
     try {
-        const response = await fetch('/api/auth-status');
+        const response = await fetch('/users/auth-status');
         const data = await response.json();
         if (data.isAuthenticated) {
             console.log(data);

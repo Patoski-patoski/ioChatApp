@@ -3,6 +3,140 @@
    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, serif;
    background-color: #010409;
    color: #9198a1;
+   height: 100%;
+ }
+
+ /* Index.html */
+
+ .app-name {
+   height: 80vh;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: #9198a1;
+ }
+
+ .app-name h1 {
+   transition: text-shadow 0.3s ease;
+ }
+
+ .app-name h1:hover {
+   text-shadow: 0 0 10px #ffffff;
+ }
+
+ .navbar-nav .nav-link:hover {
+   text-shadow: 0 0 5px #ffffff, 0 0 15px #ffffff, 0 0 20px #ff00ff;
+ }
+
+ .navbar-nav .nav-link {
+   transition: text-shadow 0.3s ease;
+ }
+
+ .feature-icon {
+   font-size: 50px;
+   color: #ff00ff;
+ }
+
+ .feature {
+   transition: transform 0.3s;
+ }
+
+ .feature:hover {
+   transform: scale(1.05);
+ }
+
+ .testimonial {
+   background-color: #0d1117;
+   padding: 20px;
+   border-radius: 5px;
+ }
+
+ /* End of index.html */
+
+ /* sign-up.html */
+ #signup-footer {
+   position: absolute;
+   bottom: 0;
+   width: 100%;
+   height: 40px;
+   text-align: center;
+   padding: 10px 0;
+   background-color: #9198a1;
+   color: #0d1117;
+ }
+
+ .btn-primary {
+   background-color: #9198a1;
+   border: none;
+   color: #0d1117;
+ }
+
+ .btn-primary:hover {
+   background-color: #7a828e;
+ }
+
+ label {
+   color: #9198a1;
+ }
+
+ .signup-form {
+   max-width: 500px;
+   margin: 50px auto;
+   padding: 20px;
+   background-color: #0d1117;
+   border-radius: 10px;
+   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+ }
+
+ /* End of signup.html */
+
+ /* Login.html */
+ .login-form {
+   max-width: 400px;
+   margin: 50px auto;
+   padding: 20px;
+   background-color: #0d1117;
+   border-radius: 10px;
+   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+ }
+
+ .btn-primary {
+   background-color: #9198a1;
+   border: none;
+   color: #0d1117;
+ }
+
+ #login-footer {
+   position: absolute;
+   bottom: 0;
+   width: 100%;
+   height: 60px;
+   text-align: center;
+   padding: 10px 0;
+   background-color: #9198a1;
+   color: #0d1117;
+ }
+
+ /* End of login.html */
+
+ /* add_friend.ejs */
+ .add-friend-form {
+   max-width: 400px;
+   margin: 50px auto;
+   padding: 20px;
+   background-color: #0d1117;
+   border-radius: 10px;
+   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+ }
+
+ .btn-primary {
+   background-color: #9198a1;
+   border: none;
+   color: #0d1117;
+ }
+
+ .btn-primary:hover {
+   background-color: #7a828e;
  }
 
  /* Main container */
@@ -68,16 +202,16 @@
    list-style-type: none;
    margin: 0;
    padding: 10px;
-  width: 100%;
+   width: 100%;
    overflow-y: auto;
-  border-bottom: 1px solid #30363d;
+   border-bottom: 1px solid #30363d;
    background-color: #0d1117;
    /* Chat background */
    border-radius: 10px;
-  max-height: 400px;
-  max-width: 800px;
+   max-height: 400px;
+   max-width: 800px;
    color: #c9d1d9;
-  border: 1px solid #30363d;
+   border: 1px solid #30363d;
    /* Text color */
    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
  }
@@ -85,8 +219,8 @@
  .chat-display li {
    padding: 8px;
    padding: 1rem;
-    background-color: #161b22;
-      border-bottom: 1px solid #30363d;
+   background-color: #161b22;
+   border-bottom: 1px solid #30363d;
 
    margin-bottom: 10px;
    background-color: #161b22;
@@ -101,8 +235,8 @@
    color: #58a6ff;
    /* Highlight color for lists */
    margin-bottom: 10px;
-  color: #9198a1;
-  margin-top: 1rem;
+   color: #9198a1;
+   margin-top: 1rem;
  }
 
  /* Form for sending messages */
@@ -113,22 +247,22 @@
    padding: 10px;
    background-color: #161b22;
    border-radius: 8px;
-    display: flex;
-      justify-content: center;
-      max-width: 800px;
-      margin-top: 1rem;
+   display: flex;
+   justify-content: center;
+   max-width: 800px;
+   margin-top: 1rem;
  }
 
  .form-msg input {
    flex-grow: 1;
    background-color: #0d1117;
    border: none;
-  padding: 0.75rem;
+   padding: 0.75rem;
    padding: 10px;
-  color: #9198a1;
-  border-radius: 5px;
+   color: #9198a1;
+   border-radius: 5px;
    outline: none;
-  margin-right: 1rem;
+   margin-right: 1rem;
    font-size: 16px;
    margin-right: 10px;
  }
@@ -137,9 +271,9 @@
    background-color: #238636;
    color: white;
    border: none;
-  padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-    cursor: pointer;
+   padding: 0.75rem 1.5rem;
+   border-radius: 5px;
+   cursor: pointer;
    font-size: 16px;
  }
 
@@ -179,68 +313,79 @@
  }
 
  /* Styles for Admin messages */
-/* Styles for your (current user's) messages */
-.post--you {
-  text-align: right;
-  background-color: #238636;
-  /* Green background for your messages */
-  color: white;
-  align-self: flex-end;
-  border-radius: 8px 8px 0 8px;
-}
+ /* Styles for your (current user's) messages */
+ .post--you {
+   text-align: right;
+   background-color: #238636;
+   /* Green background for your messages */
+   color: white;
+   align-self: flex-end;
+   border-radius: 8px 8px 0 8px;
+ }
 
-/* Styles for other users' messages */
-.post--others {
-  text-align: left;
-  background-color: #161b22;
-  /* Dark background for others' messages */
-  color: #9198a1;
-  align-self: flex-start;
-  border-radius: 8px 8px 8px 0;
-}
+ /* Styles for other users' messages */
+ .post--others {
+   text-align: left;
+   background-color: #161b22;
+   /* Dark background for others' messages */
+   color: #9198a1;
+   align-self: flex-start;
+   border-radius: 8px 8px 8px 0;
+ }
 
-/* Styles for Admin messages */
-.post--admin {
-  text-align: center;
-  color: #58a6ff;
-  /* Blue color for Admin */
-  background-color: transparent;
-}
+ /* Styles for Admin messages */
+ .post--admin {
+   text-align: center;
+   color: #58a6ff;
+   /* Blue color for Admin */
+   background-color: transparent;
+ }
 
-/* General message styling */
-.post {
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  max-width: 60%;
-  /* Limits the message width */
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid #30363d;
-}
+ /* General message styling */
+ .post {
+   padding: 8px 12px;
+   margin-bottom: 10px;
+   max-width: 60%;
+   /* Limits the message width */
+   display: flex;
+   flex-direction: column;
+   border-bottom: 1px solid #30363d;
+ }
 
-/* Container for chat messages */
-.chat-display {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  max-height: 400px;
-  overflow-y: auto;
-  background-color: #0d1117;
-  border-radius: 10px;
-}
+ /* Container for chat messages */
+ .chat-display {
+   display: flex;
+   flex-direction: column;
+   padding: 10px;
+   max-height: 400px;
+   overflow-y: auto;
+   background-color: #0d1117;
+   border-radius: 10px;
+ }
 
-/* Message header */
-.post__header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-}
+ /* Message header */
+ .post__header {
+   display: flex;
+   justify-content: space-between;
+   margin-bottom: 5px;
+ }
 
-.post__header--name {
-  font-weight: bold;
-}
+ .post__header--name {
+   font-weight: bold;
+ }
 
-.post__header--time {
-  font-size: 0.85rem;
-  color: #c9d1d9;
-}
+ .post__header--time {
+   font-size: 0.85rem;
+   color: #c9d1d9;
+ }
+
+ footer {
+   position: relative;
+   bottom: 0;
+   width: 100%;
+   height: auto;
+   text-align: center;
+   padding: 10px 0;
+   background-color: #9198a1;
+   color: #0d1117;
+ }

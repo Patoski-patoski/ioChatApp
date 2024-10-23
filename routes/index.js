@@ -68,7 +68,10 @@ router.post('/login', validateLoginInput, async (req, res) => {
     // Create a session
     req.session.userId = user._id;
     req.session.username = user.username;
-    await redisClient.set(`user:${user.username}:status`, 'online', 'EX', 600);
+    // await redisClient.set(`user:${user.username}:status`, 'online', 'EX', 600);
+    await redisClient.set(`user: ${ user.username }: status`, 'online', {
+      ex: 600, // Expiration in seconds
+    });
     res.status(200).json({ message: 'Login successful', username: user.username });
 
 

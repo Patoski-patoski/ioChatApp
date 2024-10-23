@@ -29,20 +29,33 @@ export function getClient() {
 
 /* Redis configurations */
 export const redisClient = createClient({
-  url: config.redis.url
+  url: `redis://${config.redis.username}:${config.redis.token}@${config.redis.url}:${config.redis.port}`,
+  socket: {
+    tls: true,
+    rejectUnauthorized: false
+  }
 });
 
 redisClient.on('connect', () => {
   console.log('Connected to Redis');
 });
 
-redisClient.on('error', () => {
+redisClient.on('error', (err) => {
   console.error('Redis error: ', err);
 });
 
 export async function connectRedis() {
   try {
-    await redisClient.connect();
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
+
+    //Test the connection
+    await redisClient.set('test', 'connection');
+    const testValue = await redisClient.get('test');
+    console.log('Redis test value:', testValue);
+
+    return true
   } catch (error) {
     console.error('Redis connection error: ', error);
     throw error;
@@ -51,4 +64,6 @@ export async function connectRedis() {
 
 export const redisStore = new RedisStore({
   client: redisClient,
+  prefix: "appSession",
+  ttl: 86400,
 });

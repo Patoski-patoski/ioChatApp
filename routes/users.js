@@ -1,6 +1,6 @@
 //routes/users.js
 
-import { dirname, join } from 'path';
+import { join } from 'path';
 import { Router } from 'express';
 import { redisClient } from './database.js';
 import isAuthenticated from "../middleware/auth.js";

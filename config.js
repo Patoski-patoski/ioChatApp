@@ -2,13 +2,17 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+
 export default {
     mongodb: {
         url: process.env.MONGODB_URI || "mongodb://localhost/chatapp",
         dbName: 'chatapp'
     },
     redis: {
-        url: process.env.REDIS_URI || 'redis://localhost:6379'
+        username: process.env.REDIS_USERNAME,
+        url: process.env.REDIS_URL,
+        token: process.env.REDIS_REST_TOKEN,
+        port: process.env.REDIS_PORT
     },
     server: {
         port: process.env.PORT || 3000,

@@ -29,9 +29,6 @@ app.use(urlencoded({ extended: true }));
 app.use(cookieParser(config.session.secret));
 app.use(express.static(join(__dirname, 'public')));
 
-
-
-
 async function initializeDatabases() {
   try {
     await connectToDataBase();
@@ -49,11 +46,10 @@ async function initializeDatabases() {
 
     // catch 404 and forward to error handler
     app.use(function (req, res, next) {
-      next(createError(404));
+      next(createError(404, 'Resource not found'));
     });
 
     app.use(function (err, req, res, next) {
-      console.error(err.stack);
       res.locals.message = err.message;
       res.locals.error = req.app.get('env') === 'development' ? err : {};
 
@@ -66,8 +62,6 @@ async function initializeDatabases() {
     });
 
     setupSocketIO(expresServer);
-
-
 
   } catch (error) {
     console.error('Failed to connect to databases:', error);

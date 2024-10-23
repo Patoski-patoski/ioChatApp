@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-
 export default {
     mongodb: {
         url: process.env.MONGODB_URI || "mongodb://localhost/chatapp",

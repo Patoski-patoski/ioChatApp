@@ -1,4 +1,5 @@
 /* /public/javascripts/add_friend.js */
+
 async function checkAuth() {
     try {
         const response = await fetch('/users/auth-status');
@@ -17,6 +18,8 @@ checkAuth();
 
 async function verifyFriend(event) {
     event.preventDefault();
+    const successText = document.getElementById('success-message');
+    const errorText = document.getElementById('error-message');
     const username = document.getElementById('friend-username').value;
 
     try {
@@ -24,20 +27,21 @@ async function verifyFriend(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
             body: JSON.stringify({ username }),
         });
+   
         const data = await response.json();
         if (response.ok) {
-            console.log('Friend found:', data.message);
-            window.location.href = `/rooms?friendUsername=${encodeURI(data.username)}`;
+            successText.textContent = data.message;            setTimeout(() => {
+                window.location.href = `/rooms?friendUsername=${encodeURI(data.username)}`;
+            }, 2000);
         } else {
-            console.error('Friend search failed:', data.error);
-            document.getElementById('error-message').textContent = data.error;
+            errorText.textContent = data.error;
         }
     } catch {
-        console.error('Friend search error:', error);
-        document.getElementById('error-message').textContent = 'An error occurred. Please try again.';
+        errorText.textContent = 'An error occurred. Please try again.';
     }
 }
 

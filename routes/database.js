@@ -4,7 +4,6 @@ import { MongoClient } from 'mongodb';
 import RedisStore from 'connect-redis';
 import config from '../config.js';
 
-
 // Mongodb configurations
 let client;
 

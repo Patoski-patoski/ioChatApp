@@ -1,23 +1,43 @@
 // routes/database.js
 import { createClient } from 'redis';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 import RedisStore from 'connect-redis';
 import config from '../config.js';
 
 // Mongodb configurations
-let client;
+let client = null;
 
 export async function connectToDataBase() {
   if (!client) {
     try {
-      client = new MongoClient(config.mongodb.url);
+      client = new MongoClient(config.mongodb.url, {
+        serverApi: {
+          version: ServerApiVersion.v1,
+          strict: false,
+          deprecationErrors: true,
+        },
+        ssl: true,
+        tls: true,
+        tlsAllowInvalidCertificates: false,
+        retryWrites: true,
+        minPoolSize: 5,
+        maxPoolSize: 50,
+      });
       await client.connect();
-      console.log('MongoDB Connected');
+      //Send a ping to confirm successsful connection
+      await client.db(config.mongodb.dbName).command({ ping: 1 });
+      console.log('MongoDB ATLAS Connected');
+      return client;
     } catch (error) {
       console.error('MongoDB connection error:', error);
+      if (client) {
+        await client.close();
+        client = null;
+      }
       throw error  /* Re-throw to allow handling in app.js */
     }
   }
+  return client;
 }
 export function getClient() {
   if (!client) {
@@ -25,6 +45,15 @@ export function getClient() {
   }
   return client;
 }
+
+export async function closeConnection() {
+  if (client) {
+    await client.close();
+    client = null;
+    console.log('MongoDB connection closed');
+  }
+}
+
 
 /* Redis configurations */
 export const redisClient = createClient({
@@ -65,4 +94,17 @@ export const redisStore = new RedisStore({
   client: redisClient,
   prefix: "appSession",
   ttl: 86400,
+});
+
+
+process.on('SIGINT', async () => {
+  try {
+    await closeConnection();
+    await redisClient.quit();
+    console.log('Connections closed gracefully');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during graceful shutdown:', error);
+    process.exit(1);
+  }
 });

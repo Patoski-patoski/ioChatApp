@@ -3,7 +3,6 @@
 import { Server } from 'socket.io';
 import { getClient, connectToDataBase } from '../routes/database.js';
 import config from '../config.js';
-import { Timestamp } from 'mongodb';
 
 let db;
 export const ADMIN = 'Admin';
@@ -12,7 +11,14 @@ const DB_NAME = config.mongodb.dbName;
 await connectToDataBase();
 
 const setupSocketIO = async (server) => {
-    const io = new Server(server);
+    const io = new Server(server, {
+        cors: {
+            origin: process.env.NODE_ENV === 'production'
+                ? ['https://your-frontend-domain.vercel.app']
+                : ['http://localhost:3000'],
+            credentials: true
+        }
+    });
 
     //Get the MongoDB client and database
     const client = getClient();
@@ -56,9 +62,9 @@ const setupSocketIO = async (server) => {
             })
 
             // Update rooms list for everyone 
-            io.emit('roomList', {
-                rooms: await getAllActiveRooms()
-            })
+            // io.emit('roomList', {
+            //     rooms: await getAllActiveRooms()
+            // })
         });
 
         // When user disconnects - to all others 
@@ -73,9 +79,9 @@ const setupSocketIO = async (server) => {
                     users: await getUsersInRoom(user.room)
                 })
 
-                io.emit('roomList', {
-                    rooms: await getAllActiveRooms()
-                })
+                // io.emit('roomList', {
+                //     rooms: await getAllActiveRooms()
+                // })
             }
             console.log(`User ${socket.id} disconnected`)
         })

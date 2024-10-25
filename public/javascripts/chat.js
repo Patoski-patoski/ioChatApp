@@ -124,9 +124,9 @@ socket.on('userList', ({ users }) => {
     showUsers(users)
 })
 
-socket.on('roomList', ({ rooms }) => {
-    showRooms(rooms)
-})
+// socket.on('roomList', ({ rooms }) => {
+//     showRooms(rooms)
+// })
 
 function showUsers(users) {
     usersList.textContent = '';
@@ -145,15 +145,15 @@ function showUsers(users) {
     }
 }
 
-function showRooms(rooms) {
-    roomList.textContent = ''
-    if (rooms) {
-        roomList.innerHTML = '<em>Active Rooms:</em>'
-        rooms.forEach((room, i) => {
-            roomList.textContent += ` ${room}`
-            if (rooms.length > 1 && i !== rooms.length - 1) {
-                roomList.textContent += ","
-            }
-        })
-    }
-}
+// function showRooms(rooms) {
+//     roomList.textContent = ''
+//     if (rooms) {
+//         roomList.innerHTML = '<em>Active Rooms:</em>'
+//         rooms.forEach((room, i) => {
+//             roomList.textContent += ` ${room}`
+//             if (rooms.length > 1 && i !== rooms.length - 1) {
+//                 roomList.textContent += ","
+//             }
+//         })
+//     }
+// }

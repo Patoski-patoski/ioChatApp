@@ -73,7 +73,7 @@ const setupSocketIO = async (server) => {
             await userLeavesApp(socket.id);
 
             if (user) {
-                io.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} has left the room`))
+                io.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is offline`))
 
                 io.to(user.room).emit('userList', {
                     users: await getUsersInRoom(user.room)

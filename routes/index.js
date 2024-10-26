@@ -123,7 +123,7 @@ router.get('/add_friend', isAuthenticated, (req, res) => {
 
 router.get('/rooms', isAuthenticated, (req, res) => {
   const friendUsername = req.query.friendUsername;
-  const uniqueCode = req.sessionID.substring(0, 7);
+  const uniqueCode = req.session.userId.slice(-8);
   const data = { friendUsername, uniqueCode };
   res.render('rooms', data);
 });

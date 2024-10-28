@@ -2,8 +2,7 @@
 import { join } from 'path';
 import bcrypt from "bcrypt";
 import { Router } from 'express';
-import { validateSignupInput} from "../middleware/validation.js";
-import { validateLoginInput } from "../middleware/validation.js";
+import { validateSignupInput, validateLoginInput } from "../middleware/validation.js";
 import { connectToDataBase, getClient, redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
@@ -69,11 +68,11 @@ router.post('/login', validateLoginInput, async (req, res) => {
     // Create a session
     req.session.userId = user._id;
     req.session.username = user.username;
+    // await redisClient.set(`user:${user.username}:status`, 'online', 'EX', 600);
     await redisClient.set(`user: ${ user.username }: status`, 'online', {
       ex: 600, // Expiration in seconds
     });
-    res.status(200).json(
-      { message: 'Login successful', username: user.username });
+    res.status(200).json({ message: 'Login successful', username: user.username });
 
 
   } catch (error) {
@@ -105,10 +104,9 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
     if (!user) {
       return res.status(HTTP_STATUS.NOT_FOUND).json(
-        { error: "Cannot find friend with the provided username" });
+        { error: "Cannot find friend with username" });
     }
-    res.status(HTTP_STATUS.OK).json(
-      { message: "Friend added sucessfully", username: user.username });
+    res.status(HTTP_STATUS.OK).json({ message: "Friend found", username: user.username });
 
   } catch (error) {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
@@ -118,12 +116,13 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
 router.get('/add_friend', isAuthenticated, (req, res) => {
   const username = req.query.username;
+  console.log(username);
   res.render('add_friend', { username });
 });
 
 router.get('/rooms', isAuthenticated, (req, res) => {
   const friendUsername = req.query.friendUsername;
-  const uniqueCode = req.session.userId.slice(-8);
+  const uniqueCode = req.sessionID.substring(0, 7);
   const data = { friendUsername, uniqueCode };
   res.render('rooms', data);
 });

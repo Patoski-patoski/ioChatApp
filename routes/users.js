@@ -18,7 +18,7 @@ router.get('/auth-status', (req, res) => {
     res.json({
       isAuthenticated: true,
       sessionID: req.sessionID,
-      sessionId: req.session.userId,
+      userId: req.session.userId,
       sessionUsername: req.session.username
     });
   } else {
@@ -26,10 +26,10 @@ router.get('/auth-status', (req, res) => {
   }
 });
 
-router.get('/user-status/:userId', async (req, res) => {
-  const { userId } = req.params;
-  const status = await redisClient.get(`user:${userId}:status`) || 'offline';
-  res.json({ status });
+router.get('/user-status/:userName', async (req, res) => {
+  const username = req.session.username;
+  const status = await redisClient.get(`user: ${username}: status`) || 'offline';
+  res.json({ status: status });
 });
 
 export default router;

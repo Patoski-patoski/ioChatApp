@@ -134,6 +134,11 @@ The application will be available at `http://localhost:3000`
 * `POST /login` - User login
 * `GET /logout` - User logout
 
+### Validation
+
+* `GET /users/user-status/:username` - Online/Offline status
+* `GET /users/auth-status` - Authentication status
+
 ### Chat
 
 * `POST /add_friend` - Add a new friend

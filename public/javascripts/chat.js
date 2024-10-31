@@ -1,7 +1,7 @@
 // public/javascripts/chat.js
 
 // Initialize socket connection
-const socket = io('ws://localhost:3000')
+const socket = io();
 
 const msgInput = document.getElementById('message');
 const nameInput = document.getElementById('name');

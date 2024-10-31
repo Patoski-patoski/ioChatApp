@@ -30,7 +30,6 @@ app.use(helmet(config.security.helmet));
 app.use(cors(config.security.cors));
 // app.use(rateLimit(config.security.rateLimit));
 
-
 // Compression
 app.use(compression())
 

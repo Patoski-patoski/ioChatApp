@@ -14,7 +14,7 @@ const setupSocketIO = async (server) => {
     const io = new Server(server, {
         cors: {
             origin: process.env.NODE_ENV === 'production'
-                ? ['https://your-frontend-domain.vercel.app']
+                ? ['https://messaging-backend-system.onrender.com/']
                 : ['http://localhost:3000'],
             credentials: true
         }

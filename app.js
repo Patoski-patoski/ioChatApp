@@ -25,6 +25,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const app = express();
 
 // Security middleware
+app.set('trust proxy', 2);
 app.use(helmet(config.security.helmet));
 app.use(cors(config.security.cors));
 app.use(rateLimit(config.security.rateLimit));

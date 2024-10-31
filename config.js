@@ -34,7 +34,6 @@ export default {
         url: process.env.REDIS_URL,
         token: process.env.REDIS_REST_TOKEN,
         port: process.env.REDIS_PORT || '6379',
-        tls: isProd ? {} : undefined
     },
     server: {
         port: process.env.PORT || 3000,
@@ -66,6 +65,10 @@ export default {
             max: 30,
             skipSuccessfulRequests: true,
             message: "To many requests, Please try again later",
+            keyGenerator: (req, res) => {
+                // Use X-Forwarded-For header if trust proxy is set
+                return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            }
         },
         helmet: {
             contentSecurityPolicy: {
@@ -87,5 +90,5 @@ export default {
             }
         }
     },
-    environment: process.env.NODE_ENV || 'development',
+    environment: process.env.NODE_ENV || 'production',
 }

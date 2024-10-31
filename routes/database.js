@@ -1,6 +1,6 @@
 // routes/database.js
 import { createClient } from 'redis';
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import RedisStore from 'connect-redis';
 import config from '../config.js';
 
@@ -11,17 +11,12 @@ export async function connectToDataBase() {
   if (!client) {
     try {
       client = new MongoClient(config.mongodb.url, {
-        serverApi: {
-          version: ServerApiVersion.v1,
-          strict: false,
-          deprecationErrors: true,
-        },
-        ssl: true,
-        tls: true,
-        tlsAllowInvalidCertificates: false,
-        retryWrites: true,
-        minPoolSize: 5,
-        maxPoolSize: 50,
+        // ssl: true,
+        // tls: true,
+        // tlsAllowInvalidCertificates: false,
+        // retryWrites: true,
+        // minPoolSize: 5,
+        // maxPoolSize: 50,
       });
       await client.connect();
       //Send a ping to confirm successsful connection
@@ -68,9 +63,14 @@ redisClient.on('connect', () => {
   console.log('Connected to Redis');
 });
 
-redisClient.on('error', (err) => {
-  console.error('Redis error: ', err);
+redisClient.on('error', (error) => {
+  console.error('Redis Connection Error:', error);
+  setTimeout(() => {
+    console.log('Attempting to reconnect to Redis...');
+    redisClient.connect();
+  }, 5000); // retry after 5 seconds
 });
+
 
 export async function connectRedis() {
   try {

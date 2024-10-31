@@ -23,17 +23,25 @@ export default {
     mongodb: {
         url: process.env.MONGODB_URI_ATLAS,
         dbName: 'chatapp',
+        ssl: true,
+        tls: true,
+        tlsAllowInvalidCertificates: true,
+        retryWrites: true,
+        minPoolSize: 5,
+        maxPoolSize: 50,
         options: {
             maxPoolSize: 10,
             serverSelectionTimeOutMS: 10000,
             socketTimeOut: 120000
-        }
+        },
+        tls: isProd
     },
     redis: {
         username: process.env.REDIS_USERNAME || 'default',
         url: process.env.REDIS_URL,
         token: process.env.REDIS_REST_TOKEN,
         port: process.env.REDIS_PORT || '6379',
+        tls: isProd ? {} : undefined
     },
     server: {
         port: process.env.PORT || 3000,

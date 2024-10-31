@@ -6,6 +6,10 @@ import createError from 'http-errors';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import express, { json, urlencoded } from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 
 import config from './config.js';
 import indexRouter from './routes/index.js';
@@ -16,8 +20,18 @@ import { redisStore, connectToDataBase, connectRedis } from './routes/database.j
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const isProd = process.env.NODE_ENV === 'production';
 
 const app = express();
+
+// Security middleware
+app.use(helmet(config.security.helmet));
+app.use(cors(config.security.cors));
+app.use(rateLimit(config.security.rateLimit));
+
+
+// Compression
+app.use(compression())
 
 // view engine setup
 app.set('views', join(__dirname, 'views'));

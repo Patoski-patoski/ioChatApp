@@ -36,7 +36,7 @@ const setupSocketIO = async (server) => {
                 io.to(prevRoom.room).emit('message', buildMsg(ADMIN, `${name} has left the chat`))
             }
 
-            const user = await activateUser(socket.id, name, room)
+            const user = await activateUser(socket.id, name, room);
             if (prevRoom) {
                 io.to(prevRoom.room).emit('userList', {
                     users: await getUsersInRoom(prevRoom.room)
@@ -61,10 +61,6 @@ const setupSocketIO = async (server) => {
                 users: await getUsersInRoom(user.room)
             })
 
-            // Update rooms list for everyone 
-            // io.emit('roomList', {
-            //     rooms: await getAllActiveRooms()
-            // })
         });
 
         // When user disconnects - to all others 
@@ -78,10 +74,6 @@ const setupSocketIO = async (server) => {
                 io.to(user.room).emit('userList', {
                     users: await getUsersInRoom(user.room)
                 })
-
-                // io.emit('roomList', {
-                //     rooms: await getAllActiveRooms()
-                // })
             }
             console.log(`User ${socket.id} disconnected`)
         })

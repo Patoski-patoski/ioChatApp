@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 const isProd = process.env.NODE_ENV === 'production';
 
-if (isProd){
+if (isProd) {
     dotenv.config();
 }
 
@@ -33,11 +33,13 @@ export default {
         username: process.env.REDIS_USERNAME || 'default',
         url: process.env.REDIS_URL,
         token: process.env.REDIS_REST_TOKEN,
-        port: process.env.REDIS_PORT || '6379'
+        port: process.env.REDIS_PORT || '6379',
+        tls: isProd ? {} : undefined
     },
     server: {
         port: process.env.PORT || 3000,
         hostname: process.env.HOSTNAME,
+        trustProxy: isProd, //Enable behind a reverse proxy (heroku, vercel)
     },
     session: {
         secret: getSessionSecret(),
@@ -51,5 +53,39 @@ export default {
         },
         rolling: true,
     },
-    environment: process.env.NODE_ENV === 'development',
+    security: {
+        cors: {
+            origin: isProd ? process.env.ALLOWED_ORIGINS?.split(',') : '*',
+            credentials: true,
+            methods: ['GET', 'POST'],
+            exposedHeaders: ['Content-Range'],
+            maxAge: 3600
+        },
+        rateLimit: {
+            windowMs: 10 * 60 * 1000,
+            max: 30,
+            skipSuccessfulRequests: true,
+            message: "To many requests, Please try again later",
+        },
+        helmet: {
+            contentSecurityPolicy: {
+                directives: {
+                    defaultSrc: ["'self'"],
+                    scriptSrc: [
+                        "'self'",
+                        "https://cdn.jsdelivr.net/",
+                        "https://cdnjs.cloudflare.com",
+                        "'unsafe-inline'",
+                    ],
+                    fontSrc: ["'self'", "'https://fonts.googleapis.com'"],
+                    styleSrc: [
+                        "'self'",
+                        "https://cdn.jsdelivr.net/",
+                        "'unsafe-inline'"
+                    ]
+                }
+            }
+        }
+    },
+    environment: process.env.NODE_ENV || 'development',
 }

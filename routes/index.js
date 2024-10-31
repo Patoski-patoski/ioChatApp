@@ -2,7 +2,7 @@
 import { join } from 'path';
 import bcrypt from "bcrypt";
 import { Router } from 'express';
-import { validateSignupInput} from "../middleware/validation.js";
+import { validateSignupInput } from "../middleware/validation.js";
 import { validateLoginInput } from "../middleware/validation.js";
 import { connectToDataBase, getClient, redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
@@ -88,14 +88,19 @@ router.get('/logout', isAuthenticated, async (req, res) => {
     await redisClient.set(
       `user: ${req.session.username}: status`, 'online', {
       EX: 15,
-    }),
-    req.session.destroy();
-    res.status(200).json({ message: "Successfully logged out" });
+    });
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.redirect('/login');
+    });
   } else {
     res.status(HTTP_STATUS.UNAUTHORIZED).json(
       { message: "Not Authenticated" });
   }
 });
+
 
 router.post('/add_friend', isAuthenticated, async (req, res) => {
   const { username } = req.body;
@@ -127,7 +132,8 @@ router.get('/add_friend', isAuthenticated, (req, res) => {
 router.get('/rooms', isAuthenticated, (req, res) => {
   const friendUsername = req.query.friendUsername;
   const code = req.session.userId.slice(-6);
-  const uniqueCode = `${code}-${friendUsername.toString().slice(4)}`;
+  const uniqueCode = `${code}-${friendUsername}`;
+  
   const data = { friendUsername, uniqueCode };
   res.render('rooms', data);
 });

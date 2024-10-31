@@ -34,7 +34,9 @@ async function verifyFriend(event) {
    
         const data = await response.json();
         if (response.ok) {
-            successText.textContent = data.message;            setTimeout(() => {
+            errorText.textContent = '';
+            successText.textContent = data.message;
+            setTimeout(() => {
                 window.location.href = `/rooms?friendUsername=${encodeURI(data.username)}`;
             }, 2000);
         } else {

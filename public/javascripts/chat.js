@@ -124,36 +124,20 @@ socket.on('userList', ({ users }) => {
     showUsers(users)
 })
 
-// socket.on('roomList', ({ rooms }) => {
-//     showRooms(rooms)
-// })
-
 function showUsers(users) {
     usersList.textContent = '';
     if (users) {
-        usersList.innerHTML = `<em>Users in ${chatRoom.value}:</em>`;
+        usersList.innerHTML = `<em>Conversation in '${chatRoom.value}' between </em>`;
         let count = 0;
         users.forEach((user, i) => {
             if (!usersList.textContent.includes(user.name)) {
-                usersList.textContent += ` ${user.name}`;
+                if (count >= 1) {
+                    usersList.textContent += `and ${user.name} `;
+                } else {
+                    usersList.textContent += `${user.name} `;
+                }
                 count += 1;
-            }
-            if (count <= 1) {
-                usersList.textContent += ",";
             }
         })
     }
 }
-
-// function showRooms(rooms) {
-//     roomList.textContent = ''
-//     if (rooms) {
-//         roomList.innerHTML = '<em>Active Rooms:</em>'
-//         rooms.forEach((room, i) => {
-//             roomList.textContent += ` ${room}`
-//             if (rooms.length > 1 && i !== rooms.length - 1) {
-//                 roomList.textContent += ","
-//             }
-//         })
-//     }
-// }

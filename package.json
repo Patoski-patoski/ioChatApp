@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "exec": "node ./bin/www",
+    "dev": "clear ; npx nodemon app.js",
     "start": "clear ; npx nodemon --env-file=.env app.js"
   },
   "keywords": [],

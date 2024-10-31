@@ -28,7 +28,7 @@ const app = express();
 app.set('trust proxy', 2);
 app.use(helmet(config.security.helmet));
 app.use(cors(config.security.cors));
-app.use(rateLimit(config.security.rateLimit));
+// app.use(rateLimit(config.security.rateLimit));
 
 
 // Compression

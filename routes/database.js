@@ -16,7 +16,12 @@ export async function connectToDataBase() {
         // tlsAllowInvalidCertificates: false,
         // retryWrites: true,
         // minPoolSize: 5,
-        // maxPoolSize: 50,
+        // maxPoolSize: 50, 
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        tlsInsecure: true, // Temporarily disable strict SSL verification
+        socketTimeoutMS: 30000,
+        serverSelectionTimeoutMS: 30000
       });
       await client.connect();
       //Send a ping to confirm successsful connection

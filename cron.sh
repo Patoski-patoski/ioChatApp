@@ -10,7 +10,7 @@ if [ -f "$IP_FILE" ]; then
     if [ "$CURRENT_IP" != "$LAST_IP" ]; then
         echo "IP has changed from $LAST_IP to $CURRENT_IP"
         # Update the last know IP
-        echo "$CURRENT_IP" >> "$IP_FILE"
+        echo "$CURRENT_IP" > "$IP_FILE"
     else 
         echo "$CURRENT_IP" >> "$TEMP_FILE"
     fi

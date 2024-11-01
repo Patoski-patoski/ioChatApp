@@ -11,14 +11,11 @@ export async function connectToDataBase() {
   if (!client) {
     try {
       client = new MongoClient(config.mongodb.url, {
-        // ssl: true,
-        // tls: true,
-        // tlsAllowInvalidCertificates: false,
-        // retryWrites: true,
-        // minPoolSize: 5,
-        // maxPoolSize: 50, 
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+        ssl: true,
+        tls: true,
+        retryWrites: true,
+        minPoolSize: 5,
+        maxPoolSize: 50, 
         tlsInsecure: true, // Temporarily disable strict SSL verification
         socketTimeoutMS: 30000,
         serverSelectionTimeoutMS: 30000
@@ -85,9 +82,6 @@ export async function connectRedis() {
 
     //Test the connection
     await redisClient.set('test', 'connection');
-    const testValue = await redisClient.get('test');
-    console.log('Redis test value:', testValue);
-
     return true
   } catch (error) {
     console.error('Redis connection error: ', error);

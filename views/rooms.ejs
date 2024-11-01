@@ -1,10 +1,9 @@
-<!-- /views/rooms.ejs -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat App</title>
+    <title>ioChatApp</title>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"
       integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w=="
@@ -46,43 +45,97 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a style="color: #9198a1" class="nav-link" href="/signup"
-                >Sign Up</a
-              >
+              <a style="color: #9198a1" class="nav-link" href="/signup">Sign Up</a>
             </li>
             <li class="nav-item">
-              <a
-                style="color: #9198a1"
-                class="logout-button nav-link"
-                href="/logout"
-                >Logout</a
+              <a style="color: #9198a1" class="logout-button nav-link" href="/logout">Logout</a>
+            </li>
+            <li class="nav-item">
+              <!-- Button to trigger modal -->
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
               >
+                How to Use
+              </button>
             </li>
           </ul>
         </div>
       </div>
     </nav>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">
+              How to use ioChatApp
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <ol>
+              <li>Sign up and login</li>
+              <li>Add a friend registered on ioChatApp</li>
+              <li>A unique code will be generated with your friend's username appended to it</li>
+              <li>Send the code and your username to the friend as a handshake request</li>
+              <li>Your friend accepts the handshake by adding your username</li>
+              <li>Your friend adds your handshake</li>
+              <li>Click "Chat" to start a conversation</li>
+              <li>You can now send messages back and forth</li>
+            </ol>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <main>
       <!-- Form to join the chat -->
       <form class="form-join">
         <input
           type="text"
           id="name"
-          maxlength="8"
-          placeholder="Your friends name"
-          size="8"
+          maxlength="10"
+          size="10"
           required
           readonly
           value="<%= friendUsername %>"
         />
-        <input
-          type="text"
-          id="room"
-          placeholder="Chat room"
-          size="8"
-          required
-          value="<%= uniqueCode %>"
-        />
+        <label for=""
+          >Handshake:
+          <input
+            type="text"
+            id="room"
+            size="10"
+            required
+            value="<%= uniqueCode %>"
+          />
+        </label>
+
         <button id="join" type="submit">Chat</button>
       </form>
 
@@ -100,6 +153,8 @@
         <button type="submit">Send</button>
       </form>
     </main>
+
+    <!-- Bootstrap JS (Required for Modal) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

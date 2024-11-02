@@ -60,13 +60,23 @@ router.post('/login', validateLoginInput, async (req, res) => {
     const usersCollection = db.collection("users");
 
     const user = await usersCollection.findOne({ username });
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+        { error: "Invalid username or password" }
+      );
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!user || !isPasswordValid) {
+
+    if (!isPasswordValid) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json(
         { error: "Invalid username or password" });
     }
-    // Create a session
+
+    // Create a session`
     req.session.userId = user._id;
     req.session.username = user.username;
     await redisClient.set(`user: ${ user.username }: status`, 'online', {
@@ -115,6 +125,9 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       return res.status(HTTP_STATUS.NOT_FOUND).json(
         { error: "Cannot find friend with the provided username" });
     }
+
+    req.session.friendUsername = user.username;
+
     res.status(HTTP_STATUS.OK).json(
       { message: "Friend added sucessfully", username: user.username });
 
@@ -125,17 +138,23 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 });
 
 router.get('/add_friend', isAuthenticated, (req, res) => {
-  const username = req.query.username;
-  res.render('add_friend', { username });
+  if (req.session.username) {
+    res.render('add_friend', {username: req.session.username });
+  } else {
+    res.redirect('/login');
+  }
 });
 
 router.get('/rooms', isAuthenticated, (req, res) => {
-  const friendUsername = req.query.friendUsername;
-  const code = req.session.userId.slice(-6);
-  const uniqueCode = `${code}-${friendUsername}`;
-  
-  const data = { friendUsername, uniqueCode };
-  res.render('rooms', data);
+  if (req.session.friendUsername) {
+    const friendUsername = req.session.friendUsername;
+    const code = req.session.userId.slice(-7);
+    const uniqueCode = `${code}-${req.session.friendUsername}`;
+    const data = { friendUsername, uniqueCode };
+    res.render('rooms', data);
+  } else {
+    res.redirect('/add_friend');
+  }
 });
 
 export default router;

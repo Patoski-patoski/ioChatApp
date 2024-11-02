@@ -37,8 +37,8 @@ async function verifyFriend(event) {
             errorText.textContent = '';
             successText.textContent = data.message;
             setTimeout(() => {
-                window.location.href = `/rooms?friendUsername=${encodeURI(data.username)}`;
-            }, 2000);
+                window.location.href = '/rooms';
+            }, 2500);
         } else {
             errorText.textContent = data.error;
         }

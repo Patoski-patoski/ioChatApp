@@ -76,10 +76,15 @@ export default {
                         "https://cdnjs.cloudflare.com",
                         "'unsafe-inline'",
                     ],
-                    fontSrc: ["'self'", "'https://fonts.googleapis.com'"],
+                    fontSrc: [
+                        "'self'",
+                        "'https://fonts.googleapis.com'",
+                        "https://fonts.gstatic.com",
+                    ],
                     styleSrc: [
                         "'self'",
                         "https://cdn.jsdelivr.net/",
+                        "https://fonts.googleapis.com/",
                         "'unsafe-inline'"
                     ]
                 }

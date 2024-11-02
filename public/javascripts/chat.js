@@ -60,7 +60,7 @@ socket.on("message", (data) => {
     else if (name === nameInput.value) {
         li.classList.add('post--you');
         li.innerHTML = `<div class="post__header">
-      <span class="post__header--time"><span style="font-weight: bold;">You</span>  ${time}</span>
+      <span class="post__header--time"><span style="font-weight: bold;">You   </span> ${time}</span>
     </div>
     <div class="post__text">${text}</div>`;
     }
@@ -68,8 +68,8 @@ socket.on("message", (data) => {
     else {
         li.classList.add('post--others');
         li.innerHTML = `<div class="post__header">
-      <span class="post__header--name">${name} </span>
-      <span class="post__header--time">${time}</span>
+      <span class="post__header--name">${name }
+      <span class="post__header--time">${time} </span></span>
     </div>
     <div class="post__text">${text}</div>`;
     }

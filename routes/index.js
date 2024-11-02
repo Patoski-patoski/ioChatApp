@@ -79,7 +79,7 @@ router.post('/login', validateLoginInput, async (req, res) => {
     // Create a session`
     req.session.userId = user._id;
     req.session.username = user.username;
-    await redisClient.set(`user: ${ user.username }: status`, 'online', {
+    await redisClient.set(`user: ${user.username}: status`, 'online', {
       EX: 600, // Expiration in seconds
     });
     res.status(200).json(
@@ -139,7 +139,7 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
 router.get('/add_friend', isAuthenticated, (req, res) => {
   if (req.session.username) {
-    res.render('add_friend', {username: req.session.username });
+    res.render('add_friend', { username: req.session.username });
   } else {
     res.redirect('/login');
   }

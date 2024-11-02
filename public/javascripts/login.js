@@ -22,7 +22,6 @@ async function handleLogin(event) {
             errorText.textContent = data.error;
         }
     } catch (error) {
-        console.error('Login error:', error);
         errorText.textContent = 'An error occurred. Please try again.';
     }
 }

@@ -46,7 +46,12 @@ msgInput.addEventListener('keypress', () => {
 })
 
 socket.on("message", (data) => {
-    activity.textContent = "";
+   activity.textContent = '';
+    displayMessage(data);
+});
+
+// Listen for messages 
+function displayMessage(data) {
     const { name, text, time } = data;
     const li = document.createElement('li');
     li.className = 'post';
@@ -68,7 +73,7 @@ socket.on("message", (data) => {
     else {
         li.classList.add('post--others');
         li.innerHTML = `<div class="post__header">
-      <span class="post__header--name">${name }
+      <span class="post__header--name">${name}
       <span class="post__header--time">${time} </span></span>
     </div>
     <div class="post__text">${text}</div>`;
@@ -76,30 +81,6 @@ socket.on("message", (data) => {
 
     // Append the message to the chat display and scroll to the bottom
     document.querySelector('.chat-display').appendChild(li);
-    chatDisplay.scrollTop = chatDisplay.scrollHeight;
-});
-
-// Listen for messages 
-
-function displayMessage(data) {
-    const { name, text, time } = data;
-    const li = document.createElement('li');
-    li.className = 'post';
-    if (name === nameInput.value) li.className = 'post post--left';
-    if (name !== nameInput.value && name !== 'Admin') li.className = 'post post--right';
-    if (name !== 'Admin') {
-        li.innerHTML = `<div class="post__header ${name === nameInput.value
-            ? 'post__header--user'
-            : 'post__header--reply'
-            }">
-        <span class="post__header--name">${name}</span> 
-        <span class="post__header--time">${time}</span> 
-        </div>
-        <div class="post__text">${text}</div>`;
-    } else {
-        li.innerHTML = `<div class="post__text">${text}</div>`;
-    }
-    chatDisplay.appendChild(li);
     chatDisplay.scrollTop = chatDisplay.scrollHeight;
 }
 

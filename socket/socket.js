@@ -86,7 +86,6 @@ const setupSocketIO = async (server) => {
                 // Save message to database
                 await saveMessage(user.room, messageData);
                 io.to(user.room).emit('message', messageData);
-
             }
         })
 

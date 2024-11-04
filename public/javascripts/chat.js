@@ -130,14 +130,12 @@ function showUsers(users) {
         usersList.innerHTML = `<em>Conversation in '${chatRoom.value}' between </em>`;
         let count = 0;
         users.forEach((user, i) => {
-            if (!usersList.textContent.includes(user.name)) {
-                if (count >= 1) {
-                    usersList.textContent += `and ${user.name} `;
-                } else {
-                    usersList.textContent += `${user.name} `;
-                }
-                count += 1;
+            if (i == 0) {
+                usersList.innerHTML += user.name;
+            } else {
+                usersList.innerHTML += ' and ' + user.name;
             }
+            console.log(user.name, i);
         })
     }
 }

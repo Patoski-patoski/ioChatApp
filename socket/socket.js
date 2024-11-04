@@ -34,6 +34,7 @@ const setupSocketIO = async (server) => {
             if (prevRoom) {
                 socket.leave(prevRoom.room)
                 io.to(prevRoom.room).emit('message', buildMsg(ADMIN, `${name} has left the chat`))
+                await deleteUser(socket.id);
             }
 
             const user = await activateUser(socket.id, name, room);
@@ -76,6 +77,7 @@ const setupSocketIO = async (server) => {
                 })
             }
             console.log(`User ${socket.id} disconnected`)
+            await deleteUser(socket.id);
         })
 
         // Listening for a message event 
@@ -138,6 +140,9 @@ async function userLeavesApp(id) {
 
 async function getUser(id) {
     return await db.collection('users').findOne({ id: id });
+}
+async function deleteUser(id) {
+    return await db.collection('users').deleteOne({ id: id });
 }
 
 async function getUsersInRoom(room) {

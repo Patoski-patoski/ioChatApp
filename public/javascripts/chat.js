@@ -29,7 +29,7 @@ function enterRoom(e) {
     e.preventDefault();
     if (nameInput.value && chatRoom.value) {
         // clear chat display before joining new room
-        localStorage.setItem('roomcode', chatRoom.value);
+        sessionStorage.setItem('roomcode', chatRoom.value);
         chatDisplay.innerHTML = '';
         socket.emit('enterRoom', {
             name: nameInput.value,
@@ -38,7 +38,7 @@ function enterRoom(e) {
     }
 }
 function loadRoom() {
-    const savedRoom = localStorage.getItem('roomcode');
+    const savedRoom = sessionStorage.getItem('roomcode');
     if (savedRoom) {
         chatRoom.value = savedRoom;
         chatDisplay.innerHTML = '';

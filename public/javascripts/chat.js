@@ -28,6 +28,7 @@ function enterRoom(e) {
     if (nameInput.value && chatRoom.value) {
         // clear chat display before joining new room
         chatDisplay.innerHTML = '';
+        const localData = localStorage.setItem(nameInput.value, chatRoom.value);
         socket.emit('enterRoom', {
             name: nameInput.value,
             room: chatRoom.value

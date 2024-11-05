@@ -29,18 +29,23 @@ const setupSocketIO = async (server) => {
 
         //Listen for event on enterRoom
         socket.on('enterRoom', async ({ name, room }) => {
+            
+            const isNameAndRoom = await getUsersAndRoom(name, room);
+            if (isNameAndRoom) {
+                await deleteUserAndRooms(name, room);
+            }
             // leave previous room 
-            const prevRoom = await getUser(socket.id);
-            if (prevRoom) {
-                socket.leave(prevRoom.room)
-                io.to(prevRoom.room).emit('message', buildMsg(ADMIN, `${name} has left the chat`))
+            const prevUser = await getUser(socket.id);
+            if (prevUser) {
+                socket.leave(prevUser.room)
+                io.to(prevUser.room).emit('message', buildMsg(ADMIN, `${name} has left the chat`))
                 await deleteUser(socket.id);
             }
-
+           
             const user = await activateUser(socket.id, name, room);
-            if (prevRoom) {
-                io.to(prevRoom.room).emit('userList', {
-                    users: await getUsersInRoom(prevRoom.room)
+            if (prevUser) {
+                io.to(prevUser.room).emit('userList', {
+                    users: await getUsersInRoom(prevUser.room)
                 })
             }
 
@@ -67,7 +72,7 @@ const setupSocketIO = async (server) => {
         // When user disconnects - to all others 
         socket.on('disconnect', async () => {
             const user = await getUser(socket.id);
-            await userLeavesApp(socket.id);
+            await deleteUser(socket.id);
 
             if (user) {
                 io.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is offline`))
@@ -76,8 +81,7 @@ const setupSocketIO = async (server) => {
                     users: await getUsersInRoom(user.room)
                 })
             }
-            console.log(`User ${socket.id} disconnected`)
-            await deleteUser(socket.id);
+            console.log(`User ${socket.id} disconnected`);
         })
 
         // Listening for a message event 
@@ -134,23 +138,26 @@ async function activateUser(id, name, room) {
     return user;
 }
 
-async function userLeavesApp(id) {
-    return await db.collection('users').deleteOne({ id: id });
-}
-
 async function getUser(id) {
     return await db.collection('users').findOne({ id: id });
-}
-async function deleteUser(id) {
-    return await db.collection('users').deleteOne({ id: id });
 }
 
 async function getUsersInRoom(room) {
     return await db.collection('users').find({ room: room }).toArray();
 }
+async function getUsersAndRoom(room, name) {
+    return await db.collection('users').find({ room: room , name, name}).toArray();
+}
 
 async function getAllActiveRooms() {
     return await db.collection('users').distinct('room');
+}
+
+async function deleteUser(id) {
+    return await db.collection('users').deleteOne({ id: id });
+}
+async function deleteUserAndRooms(name, room) {
+    return await db.collection('users').deleteMany({ room: room, name: name });
 }
 
 export default setupSocketIO;

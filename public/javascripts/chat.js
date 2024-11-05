@@ -12,7 +12,7 @@ const usersList = document.querySelector('.user-list');
 const roomList = document.querySelector('.room-list');
 const chatDisplay = document.querySelector('.chat-display');
 
-window.addEventListener('load', ()=> loadRoom());
+window.addEventListener('load', loadRoom);
 
 function sendMessage(e) {
     e.preventDefault()
@@ -29,6 +29,7 @@ function enterRoom(e) {
     e.preventDefault();
     if (nameInput.value && chatRoom.value) {
         // clear chat display before joining new room
+        localStorage.setItem('roomcode', chatRoom.value);
         chatDisplay.innerHTML = '';
         socket.emit('enterRoom', {
             name: nameInput.value,
@@ -37,8 +38,7 @@ function enterRoom(e) {
     }
 }
 function loadRoom() {
-    const savedRoom = localStorage.getItem(nameInput.value);
-    console.log(savedRoom);
+    const savedRoom = localStorage.getItem('roomcode');
     if (savedRoom) {
         chatRoom.value = savedRoom;
         chatDisplay.innerHTML = '';

@@ -70,7 +70,6 @@ router.post('/login', validateLoginInput, async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-
     if (!isPasswordValid) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json(
         { error: "Invalid username or password" });

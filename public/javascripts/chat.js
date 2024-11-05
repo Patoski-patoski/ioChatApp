@@ -12,7 +12,7 @@ const usersList = document.querySelector('.user-list');
 const roomList = document.querySelector('.room-list');
 const chatDisplay = document.querySelector('.chat-display');
 
-window.addEventListener('load', loadRoom());
+window.addEventListener('load', ()=> loadRoom());
 
 function sendMessage(e) {
     e.preventDefault()
@@ -38,6 +38,7 @@ function enterRoom(e) {
 }
 function loadRoom() {
     const savedRoom = localStorage.getItem(nameInput.value);
+    console.log(savedRoom);
     if (savedRoom) {
         chatRoom.value = savedRoom;
         chatDisplay.innerHTML = '';

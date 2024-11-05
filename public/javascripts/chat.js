@@ -12,6 +12,8 @@ const usersList = document.querySelector('.user-list');
 const roomList = document.querySelector('.room-list');
 const chatDisplay = document.querySelector('.chat-display');
 
+window.addEventListener('load', loadRoom());
+
 function sendMessage(e) {
     e.preventDefault()
     if (nameInput.value && msgInput.value && chatRoom.value) {
@@ -28,12 +30,23 @@ function enterRoom(e) {
     if (nameInput.value && chatRoom.value) {
         // clear chat display before joining new room
         chatDisplay.innerHTML = '';
-        const localData = localStorage.setItem(nameInput.value, chatRoom.value);
         socket.emit('enterRoom', {
             name: nameInput.value,
             room: chatRoom.value
         })
     }
+}
+function loadRoom() {
+    const savedRoom = localStorage.getItem(nameInput.value);
+    if (savedRoom) {
+        chatRoom.value = savedRoom;
+        chatDisplay.innerHTML = '';
+        socket.emit('enterRoom', {
+            name: nameInput.value,
+            room: savedRoom,
+        });
+    }
+    msgInput.focus();
 }
 
 document.querySelector('.form-msg')
@@ -117,7 +130,6 @@ function showUsers(users) {
             } else {
                 usersList.innerHTML += ' and ' + user.name;
             }
-            console.log(user.name, i);
         })
     }
 }

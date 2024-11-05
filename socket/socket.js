@@ -25,11 +25,10 @@ const setupSocketIO = async (server) => {
     db = client.db(DB_NAME);
 
     io.on('connection', async (socket) => {
-        console.log(`User ${socket.id} connected`)
+        console.log(`User ${socket.id} connected`);
 
         //Listen for event on enterRoom
         socket.on('enterRoom', async ({ name, room }) => {
-            
             const isNameAndRoom = await getUsersAndRoom(name, room);
             if (isNameAndRoom) {
                 await deleteUserAndRooms(name, room);

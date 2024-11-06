@@ -23,6 +23,7 @@
         padding-bottom: 3rem;
         background-color: #010409;
       }
+      
     </style>
   </head>
 
@@ -45,10 +46,17 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a style="color: #9198a1" class="nav-link" href="/signup">Sign Up</a>
+              <a style="color: #9198a1" class="nav-link" href="/signup"
+                >Sign Up</a
+              >
             </li>
             <li class="nav-item">
-              <a style="color: #9198a1" class="logout-button nav-link" href="/logout">Logout</a>
+              <a
+                style="color: #9198a1"
+                class="logout-button nav-link"
+                href="/logout"
+                >Logout</a
+              >
             </li>
             <li class="nav-item">
               <!-- Button to trigger modal -->
@@ -91,8 +99,14 @@
             <ol>
               <li>Sign up and login</li>
               <li>Add a friend registered on ioChatApp</li>
-              <li>A unique code will be generated with your friend's username appended to it</li>
-              <li>Send the code and your username to the friend as a handshake request</li>
+              <li>
+                A unique code will be generated with your friend's username
+                appended to it
+              </li>
+              <li>
+                Send the code and your username to the friend as a handshake
+                request
+              </li>
               <li>Your friend accepts the handshake by adding your username</li>
               <li>Your friend adds your handshake</li>
               <li>Click "Chat" to start a conversation</li>
@@ -121,11 +135,10 @@
           maxlength="10"
           size="10"
           required
-          readonly
           value="<%= friendUsername %>"
         />
-        <label for=""
-          >Handshake:
+        <label>
+          Handshake:
           <input
             type="text"
             id="room"
@@ -137,13 +150,18 @@
 
         <button id="join" type="submit">Chat</button>
       </form>
+      <!-- Add this right after the form-join form in the HTML -->
+      <div class="recent-rooms">
+        <h5 style="color: #9198a1; margin: 1rem">Recent Handshakes</h5>
+        <div class="recent-rooms-list"></div>
+      </div>
 
       <!-- Display chat messages -->
       <ul class="chat-display"></ul>
 
       <!-- Additional chat information -->
       <p class="user-list">Active users: <span id="user-count">0</span></p>
-      <p class="room-list">Handshake: </p>
+      <p class="room-list">Handshake:</p>
       <p class="activity">No recent activity</p>
 
       <!-- Form to send messages -->

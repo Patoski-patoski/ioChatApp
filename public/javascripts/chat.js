@@ -12,7 +12,105 @@ const usersList = document.querySelector('.user-list');
 const roomList = document.querySelector('.room-list');
 const chatDisplay = document.querySelector('.chat-display');
 
-window.addEventListener('load', loadRoom);
+// Add these functions at the beginning of chat.js
+const MAX_RECENT_ROOMS = 5;
+
+function saveRecentRoom(name, roomCode) {
+    let recentRooms = JSON.parse(localStorage.getItem('recentRooms') || '[]');
+
+    // Remove if already exists
+    recentRooms = recentRooms.filter(room => room.code !== roomCode);
+
+    // Add new room at the beginning
+    recentRooms.unshift({
+        name: name,
+        code: roomCode,
+        timestamp: new Date().toISOString()
+    });
+
+    // Keep only the most recent rooms
+    recentRooms = recentRooms.slice(0, MAX_RECENT_ROOMS);
+
+    localStorage.setItem('recentRooms', JSON.stringify(recentRooms));
+    displayRecentRooms();
+}
+
+function displayRecentRooms() {
+    const recentRoomsList = document.querySelector('.recent-rooms-list');
+    const recentRooms = JSON.parse(localStorage.getItem('recentRooms') || '[]');
+
+    recentRoomsList.innerHTML = recentRooms.map(room => `
+        <div class="recent-room-item" data-code="${room.code}" data-name="${room.name}">
+            <span>${room.name} - ${room.code}</span>
+            <button class="remove-room-btn" data-code="${room.code}">×</button>
+        </div>
+    `).join('');
+
+    // Add click handlers using event delegation
+    recentRoomsList.addEventListener('click', handleRecentRoomsClick);
+}
+
+function handleRecentRoomsClick(event) {
+    const target = event.target;
+
+    // Handle remove button click
+    if (target.classList.contains('remove-room-btn')) {
+        const roomCode = target.dataset.code;
+        removeRecentRoom(roomCode);
+        return;
+    }
+
+    // Handle room item click
+    const roomItem = target.closest('.recent-room-item');
+    if (roomItem && !target.classList.contains('remove-room-btn')) {
+        const code = roomItem.dataset.code;
+        const name = roomItem.dataset.name;
+        rejoinRoom(code, name);
+    }
+}
+
+function removeRecentRoom(roomCode) {
+    let recentRooms = JSON.parse(localStorage.getItem('recentRooms') || '[]');
+    recentRooms = recentRooms.filter(room => room.code !== roomCode);
+    localStorage.setItem('recentRooms', JSON.stringify(recentRooms));
+    displayRecentRooms();
+}
+
+function rejoinRoom(roomCode, friendName) {
+    nameInput.value = friendName;
+    chatRoom.value = roomCode;
+    document.querySelector('.form-join').dispatchEvent(new Event('submit'));
+}
+
+// Modify the existing enterRoom function to save recent rooms
+function enterRoom(e) {
+    e.preventDefault();
+    if (nameInput.value && chatRoom.value) {
+        sessionStorage.setItem('roomcode', chatRoom.value);
+        roomList.textContent += chatRoom.value;
+        chatDisplay.value = '';
+
+        // Save to recent rooms
+        saveRecentRoom(nameInput.value, chatRoom.value);
+
+        socket.emit('enterRoom', {
+            name: nameInput.value,
+            room: chatRoom.value
+        });
+    }
+}
+
+// Clean up event listeners when needed
+function cleanupRecentRoomsListeners() {
+    const recentRoomsList = document.querySelector('.recent-rooms-list');
+    recentRoomsList.removeEventListener('click', handleRecentRoomsClick);
+}
+
+// Add this to your window.addEventListener('load', ...) function
+window.addEventListener('load', () => {
+    loadRoom();
+    displayRecentRooms();
+});
 
 function sendMessage(e) {
     e.preventDefault()
@@ -25,19 +123,7 @@ function sendMessage(e) {
     }
     msgInput.focus();
 }
-function enterRoom(e) {
-    e.preventDefault();
-    if (nameInput.value && chatRoom.value) {
-        // clear chat display before joining new room
-        sessionStorage.setItem('roomcode', chatRoom.value);
-        roomList.textContent += chatRoom.value;
-        chatDisplay.value = '';
-        socket.emit('enterRoom', {
-            name: nameInput.value,
-            room: chatRoom.value
-        })
-    }
-}
+
 function loadRoom() {
     const savedRoom = sessionStorage.getItem('roomcode');
     if (savedRoom) {
@@ -52,18 +138,18 @@ function loadRoom() {
     msgInput.focus();
 }
 
-document.querySelector('.form-msg')
-    .addEventListener('submit', sendMessage);
-
-document.querySelector('.form-join')
-    .addEventListener('submit', enterRoom);
+document.querySelector('.form-msg').addEventListener('submit', sendMessage);
+document.querySelector('.form-join').addEventListener('submit', enterRoom);
+chatRoom.addEventListener('keypress', () => {
+    nameInput.value = '';
+});
 
 msgInput.addEventListener('keypress', () => {
     socket.emit('activity', nameInput.value);
 });
 
 socket.on("message", (data) => {
-   activity.textContent = '';
+    activity.textContent = '';
     displayMessage(data);
 });
 
@@ -107,15 +193,15 @@ socket.on('chatHistory', (messages) => {
     messages.forEach(displayMessage);
 });
 
-let activityTimer
+let activityTimer;
 socket.on("activity", (name) => {
     activity.textContent = `${name} is typing...`
 
-    // Clear after 3 seconds 
+    // Clear after 5 seconds 
     clearTimeout(activityTimer)
     activityTimer = setTimeout(() => {
         activity.textContent = ""
-    }, 10000)
+    }, 5000)
 })
 
 socket.on('userList', ({ users }) => {

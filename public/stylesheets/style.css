@@ -398,3 +398,38 @@ footer {
   background-color: #9198a1;
   color: #0d1117;
 }
+
+.recent-rooms {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.recent-room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  background-color: #0d1117;
+  border-radius: 4px;
+  color: #9198a1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.recent-room-item:hover {
+  background-color: #161b22;
+}
+
+.recent-room-item button {
+  background: none;
+  border: none;
+  color: #9198a1;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.recent-room-item button:hover {
+  color: #ff4444;
+}

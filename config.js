@@ -78,7 +78,7 @@ export default {
                     ],
                     fontSrc: [
                         "'self'",
-                        "'https://fonts.googleapis.com'",
+                        "https://fonts.googleapis.com",
                         "https://fonts.gstatic.com",
                     ],
                     styleSrc: [

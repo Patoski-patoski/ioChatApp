@@ -30,7 +30,8 @@ function enterRoom(e) {
     if (nameInput.value && chatRoom.value) {
         // clear chat display before joining new room
         sessionStorage.setItem('roomcode', chatRoom.value);
-        chatDisplay.innerHTML = '';
+        roomList.textContent += chatRoom.value;
+        chatDisplay.value = '';
         socket.emit('enterRoom', {
             name: nameInput.value,
             room: chatRoom.value
@@ -41,6 +42,7 @@ function loadRoom() {
     const savedRoom = sessionStorage.getItem('roomcode');
     if (savedRoom) {
         chatRoom.value = savedRoom;
+        roomList.textContent += chatRoom.value;
         chatDisplay.innerHTML = '';
         socket.emit('enterRoom', {
             name: nameInput.value,
@@ -51,14 +53,14 @@ function loadRoom() {
 }
 
 document.querySelector('.form-msg')
-    .addEventListener('submit', sendMessage)
+    .addEventListener('submit', sendMessage);
 
 document.querySelector('.form-join')
-    .addEventListener('submit', enterRoom)
+    .addEventListener('submit', enterRoom);
 
 msgInput.addEventListener('keypress', () => {
-    socket.emit('activity', nameInput.value)
-})
+    socket.emit('activity', nameInput.value);
+});
 
 socket.on("message", (data) => {
    activity.textContent = '';

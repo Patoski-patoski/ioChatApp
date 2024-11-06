@@ -5,7 +5,7 @@ async function checkAuth() {
         const response = await fetch('/users/auth-status');
         const data = await response.json();
         if (data.isAuthenticated) {
-            console.log(data);
+            console.log('User Authenticated');
         } else {
             window.location.href = '/login';
         }

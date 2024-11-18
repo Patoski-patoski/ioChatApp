@@ -4,9 +4,10 @@ import bcrypt from "bcrypt";
 import { Router } from 'express';
 import { validateSignupInput } from "../middleware/validation.js";
 import { validateLoginInput } from "../middleware/validation.js";
-import { connectToDataBase, getClient, redisClient } from './database.js';
+import { connectToDataBase, redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
+import { User, Message } from '../models/users.js';
 
 const router = Router();
 
@@ -23,43 +24,40 @@ router.get('/login', (_req, res) => {
 });
 
 router.post('/signup', validateSignupInput, async (req, res, next) => {
-  const { username, sex, password } = req.body;
+  const { username, sex, password, email } = req.body;
 
   try {
-    await connectToDataBase();
-    const client = getClient();
-    const db = client.db("chatapp");
-    const usersCollection = db.collection("users");
 
-    const existingUser = await usersCollection.findOne({ username });
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(HTTP_STATUS.CONFLICT).json(
         { error: 'Username already exists. Please choose another.' });
     }
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    await usersCollection.insertOne({
+    await User.create({
       username,
       sex,
+      email,
+      friends: [],
       password: hashedPassword,
     });
+
+    console.log(existingUser);
+    
     res.status(200).json({ message: 'Signup successful' });
 
   } catch (error) {
+    console.error('Signup error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
       { error: 'An error occurred during signup' });
   }
-
 });
 
 router.post('/login', validateLoginInput, async (req, res) => {
   const { username, password } = req.body;
-  try {
-    await connectToDataBase();
-    const client = getClient();
-    const db = client.db("chatapp");
-    const usersCollection = db.collection("users");
 
-    const user = await usersCollection.findOne({ username });
+  try {
+    const user = await User.findOne({ username });
 
     // Check if the user exists
     if (!user) {
@@ -67,7 +65,6 @@ router.post('/login', validateLoginInput, async (req, res) => {
         { error: "Invalid username or password" }
       );
     }
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -110,31 +107,6 @@ router.get('/logout', isAuthenticated, async (req, res) => {
   }
 });
 
-
-router.post('/add_friend', isAuthenticated, async (req, res) => {
-  const { username } = req.body;
-  try {
-    await connectToDataBase();
-    const client = getClient();
-    const db = client.db("chatapp");
-    const usersCollection = db.collection("users");
-    const user = await usersCollection.findOne({ username });
-
-    if (!user) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json(
-        { error: "Cannot find friend with the provided username" });
-    }
-
-    req.session.friendUsername = user.username;
-
-    res.status(HTTP_STATUS.OK).json(
-      { message: "Friend added sucessfully", username: user.username });
-
-  } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
-      { error: 'An error occurred during post' });
-  }
-});
 
 router.get('/add_friend', isAuthenticated, (req, res) => {
   if (req.session.username) {

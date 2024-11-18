@@ -1,14 +1,9 @@
-// socket/socket.js
-
 import { Server } from 'socket.io';
-import { getClient, connectToDataBase } from '../routes/database.js';
+import { connectToDataBase } from '../routes/database.js';
 import config from '../config.js';
+import { User, Message } from '../models/users.js';  // Import Mongoose models
 
-let db;
 export const ADMIN = 'Admin';
-const DB_NAME = config.mongodb.dbName;
-
-await connectToDataBase();
 
 const setupSocketIO = async (server) => {
     const io = new Server(server, {
@@ -20,88 +15,73 @@ const setupSocketIO = async (server) => {
         }
     });
 
-    //Get the MongoDB client and database
-    const client = getClient();
-    db = client.db(DB_NAME);
 
     io.on('connection', async (socket) => {
         console.log(`User ${socket.id} connected`);
 
-        //Listen for event on enterRoom
         socket.on('enterRoom', async ({ name, room }) => {
             const isNameAndRoom = await getUsersAndRoom(name, room);
-            if (isNameAndRoom) {
+            if (isNameAndRoom.length > 0) {
                 await deleteUserAndRooms(name, room);
             }
-            // leave previous room 
+
             const prevUser = await getUser(socket.id);
             if (prevUser) {
-                socket.leave(prevUser.room)
-                io.to(prevUser.room).emit('message', buildMsg(ADMIN, `${name} has left the chat`))
+                socket.leave(prevUser.room);
+                io.to(prevUser.room).emit('message', buildMsg(ADMIN, `${name} has left the chat`));
                 await deleteUser(socket.id);
             }
-           
+
             const user = await activateUser(socket.id, name, room);
             if (prevUser) {
                 io.to(prevUser.room).emit('userList', {
                     users: await getUsersInRoom(prevUser.room)
-                })
+                });
             }
 
-            // join room 
             socket.join(user.room);
 
-            // load previous message for this chat
             const chatHistory = await getChatHistory(room);
             socket.emit('chatHistory', chatHistory);
 
-            // To user who joined 
-            socket.emit('message', buildMsg(ADMIN, `You have started a conversation at ${user.room}`))
+            socket.emit('message', buildMsg(ADMIN, `You have started a conversation at ${user.room}`));
+            socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is online`));
 
-            // To everyone else 
-            socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is online`))
-
-            // Update user list for room 
             io.to(user.room).emit('userList', {
                 users: await getUsersInRoom(user.room)
-            })
-
+            });
         });
 
-        // When user disconnects - to all others 
         socket.on('disconnect', async () => {
             const user = await getUser(socket.id);
             await deleteUser(socket.id);
 
             if (user) {
-                io.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is offline`))
-
+                io.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is offline`));
                 io.to(user.room).emit('userList', {
                     users: await getUsersInRoom(user.room)
-                })
+                });
             }
             console.log(`User ${socket.id} disconnected`);
-        })
+        });
 
-        // Listening for a message event 
         socket.on('message', async ({ name, text }) => {
             const user = await getUser(socket.id);
             if (user) {
                 const messageData = buildMsg(name, text);
-                // Save message to database
                 await saveMessage(user.room, messageData);
                 io.to(user.room).emit('message', messageData);
             }
-        })
+        });
 
-        // Listen for activity 
         socket.on('activity', async (name) => {
             const user = await getUser(socket.id);
             if (user) {
-                socket.broadcast.to(user.room).emit('activity', name)
+                socket.broadcast.to(user.room).emit('activity', name);
             }
-        })
-    })
+        });
+    });
+
     return io;
 };
 
@@ -115,48 +95,49 @@ function buildMsg(name, text) {
             hour12: true
         }).format(new Date()),
         timestamp: new Date()
-    }
+    };
 }
 
 async function saveMessage(room, messageData) {
-    await db.collection('messages').insertOne({ room, ...messageData });
+    await Message.create({ room, ...messageData });
 }
 
 async function getChatHistory(room) {
-    return await db.collection('messages').find({ room }).sort({ timestamp: 1 }).toArray();
+    return await Message.find({ room }).sort({ timestamp: 1 });
 }
 
-// User functions 
 async function activateUser(id, name, room) {
     const user = { id, name, room };
-    await db.collection('users').updateOne(
+    await User.findOneAndUpdate(
         { id: id },
-        { $set: user },
-        { upsert: true }
+        user,
+        { upsert: true, new: true }
     );
     return user;
 }
 
 async function getUser(id) {
-    return await db.collection('users').findOne({ id: id });
+    return await User.findOne({ id: id });
 }
 
 async function getUsersInRoom(room) {
-    return await db.collection('users').find({ room: room }).toArray();
+    return await User.find({ room: room });
 }
+
 async function getUsersAndRoom(room, name) {
-    return await db.collection('users').find({ room: room , name, name}).toArray();
+    return await User.find({ room: room, name: name });
 }
 
 async function getAllActiveRooms() {
-    return await db.collection('users').distinct('room');
+    return await User.distinct('room');
 }
 
 async function deleteUser(id) {
-    return await db.collection('users').deleteOne({ id: id });
+    return await User.deleteOne({ id: id });
 }
+
 async function deleteUserAndRooms(name, room) {
-    return await db.collection('users').deleteMany({ room: room, name: name });
+    return await User.deleteMany({ room: room, name: name });
 }
 
 export default setupSocketIO;

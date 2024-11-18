@@ -20,7 +20,7 @@ async function verifyFriend(event) {
     event.preventDefault();
     const successText = document.getElementById('success-message');
     const errorText = document.getElementById('error-message');
-    const username = document.getElementById('friend-username').value;
+    const email = document.getElementById('friend-email').value;
 
     try {
         const response = await fetch('/add_friend', {
@@ -29,7 +29,7 @@ async function verifyFriend(event) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ username }),
+            body: JSON.stringify({ email }),
         });
    
         const data = await response.json();

@@ -4,6 +4,7 @@ async function handleSignup(event) {
     event.preventDefault();
     const username = document.getElementById('username').value;
     const sex = document.getElementById('sex').value;
+    const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const confirm_password = document.getElementById('confirm_password').value;
 
@@ -13,7 +14,7 @@ async function handleSignup(event) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password, sex, confirm_password }),
+            body: JSON.stringify({ username, password, email, sex, confirm_password }),
         });
         const data = await response.json();
         

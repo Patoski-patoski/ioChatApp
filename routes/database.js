@@ -1,54 +1,31 @@
 // routes/database.js
 import { createClient } from 'redis';
-import { MongoClient } from 'mongodb';
 import RedisStore from 'connect-redis';
 import config from '../config.js';
+import mongoose from 'mongoose';
 
 // Mongodb configurations
-let client = null;
-
 export async function connectToDataBase() {
-  if (!client) {
-    try {
-      client = new MongoClient(config.mongodb.url, {
-        ssl: true,
-        tls: true,
-        retryWrites: true,
-        minPoolSize: 5,
-        maxPoolSize: 50, 
-        tlsInsecure: true, // Temporarily disable strict SSL verification
-        socketTimeoutMS: 30000,
-        serverSelectionTimeoutMS: 30000
-      });
-      await client.connect();
-      //Send a ping to confirm successsful connection
-      await client.db(config.mongodb.dbName).command({ ping: 1 });
-      console.log('MongoDB ATLAS Connected');
-      return client;
-    } catch (error) {
-      console.error('MongoDB connection error:', error);
-      if (client) {
-        await client.close();
-        client = null;
-      }
-      throw error  /* Re-throw to allow handling in app.js */
-    }
+  try {
+    await mongoose.connect(config.mongodb.url, {
+      dbName: config.mongodb.dbName
+    });
+    console.log('MongoDB Mongoose Connected');
+    return mongoose.connection;
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    // process.exit(1);
+    throw error;
   }
-  return client;
 }
-export function getClient() {
-  if (!client) {
-    throw new Error('Database not connected. Call connectToDataBase() first.');
-  }
-  return client;
+
+export function getMongoose() {
+  return mongoose;
 }
 
 export async function closeConnection() {
-  if (client) {
-    await client.close();
-    client = null;
-    console.log('MongoDB connection closed');
-  }
+  await mongoose.connection.close();
+  console.log('MongoDB connection closed');
 }
 
 

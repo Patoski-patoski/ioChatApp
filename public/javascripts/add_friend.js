@@ -20,7 +20,7 @@ async function verifyFriend(event) {
     event.preventDefault();
     const successText = document.getElementById('success-message');
     const errorText = document.getElementById('error-message');
-    const email = document.getElementById('friend-email').value;
+    const username = document.getElementById('friend-username').value;
 
     try {
         const response = await fetch('/add_friend', {
@@ -29,20 +29,29 @@ async function verifyFriend(event) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ email }),
+            body: JSON.stringify({ username }),
         });
-   
+
         const data = await response.json();
         if (response.ok) {
             errorText.textContent = '';
             successText.textContent = data.message;
-            setTimeout(() => {
-                window.location.href = '/rooms';
-            }, 2500);
+
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                console.log("Successful, waiting to redirect");
+                setTimeout(() => {
+                    window.location.href = '/rooms';
+                }, 2000);
+            }
         } else {
             errorText.textContent = data.error;
+            setTimeout(() => {
+                errorText.textContent = '';
+            }, 5000);
         }
-    } catch {
+    } catch (error) {
         errorText.textContent = 'An error occurred. Please try again.';
     }
 }

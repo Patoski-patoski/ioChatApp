@@ -95,29 +95,3 @@ export default {
     environment: process.env.NODE_ENV || 'production',
 }
 
-export const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
-});
-
-let mailOption = {
-    from: process.env.EMAIL_USER,
-    to: 'patrickokafor911@gmail.com',
-    subject: 'Sending Email using Nodejs',
-    text: 'That was easy! bro.Up Nodejs Up Jesus!'
-};
-
-transporter.on('connection', (stream) => {
-    console.log('Someone connected');
-});
-
-function sendEMail(transporter) {
-    transporter.sendMail(mailOption, function (error, info) {
-        if (error) console.error(error);
-        else console.log(`Email sent: ` + info.response);
-    })
-}

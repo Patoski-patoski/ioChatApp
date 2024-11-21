@@ -9,6 +9,7 @@ import nodemailer from 'nodemailer';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
 import { User } from '../models/users.js';
+import { checkFriendStatus, generateRoomCode, createFriendRequestEmailTemplate } from '../public/javascripts/constants.js';
 
 const router = Router();
 
@@ -84,46 +85,66 @@ router.post('/login', validateLoginInput, async (req, res) => {
       { error: 'An error occurred during login' });
   }
 });
+
+
 router.post('/add_friend', isAuthenticated, async (req, res) => {
   const { username } = req.body;
+
+  if (!username) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      error: "Friend username is required"
+    });
+  }
+  if (username === req.session.username) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      error: "You cannot chat with yourself!"
+    });
+  }
+
   try {
-    if (!username) {
-      console.error(fr);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        error: "Friend username is required"
-      });
-    }
 
     const currentUser = await User.findOne({ username: req.session.username });
-    if (!currentUser) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        error: "User not found"
-      });
-    }
-
-    // Find potential friend
     const friendUser = await User.findOne({ username: username });
-    if (!friendUser) {
+
+    if (!friendUser || !friendUser) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: "Cannot find user"
+        error: "User not found",
       });
     }
 
-    // Check if users are already friends
-    const alreadyFriends = currentUser.friends.some(
-      friend => friend.userId.equals(friendUser._id) && friend.status === 'pending'
-    );
+    const { isPending, isAccepted } = await checkFriendStatus(currentUser, friendUser);
 
-    if (alreadyFriends) {
+    if (isPending || isAccepted) {
       req.session.friendUsername = friendUser.username;
       return res.status(HTTP_STATUS.OK).json({
-        message: "Already Friends",
-        redirect: '/rooms'
-      })
+        message: 'Already friends',
+        redirect: '/rooms',
+      });
     }
 
     // Generate unique code
-    const uniqueCode = `${req.session.userId.slice(-7)}-${currentUser.username}`;
+    const uniqueCode = generateRoomCode(currentUser._id.toString(), currentUser.username);
+
+    await Promise.all([
+      await User.updateOne(
+        { _id: currentUser._id, "friends.userId": friendUser._id },
+        {
+          $set: {
+            "friends.$.status": "pending",
+            "friends.$.roomCode": uniqueCode
+          }
+        }
+      ),
+       await User.updateOne(
+        { _id: friendUser._id , "friends.userId": currentUser._id },
+        {
+          $set: {
+            "friends.$.status": "pending",
+            "friends.$.roomCode": uniqueCode
+          }
+        }
+      ),
+    ]);
 
     // Create email template
     const emailTemplate = createFriendRequestEmailTemplate({
@@ -138,46 +159,20 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       template: emailTemplate
     });
 
-    await User.findOneAndUpdate(
-      { username: currentUser.username },
-      {
-        $push: {
-          friends: {
-            userId: friendUser._id,
-            status: 'pending',
-            roomCode: uniqueCode
-          }
-        }
-      }
-    );
 
     return res.status(HTTP_STATUS.OK).json({
       message: "Friend request sent successfully"
     });
 
   } catch (error) {
+    console.error(error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       error: 'An error occurred processing the friend request'
     });
   }
 });
 
-// Separate email template creation
-function createFriendRequestEmailTemplate({ currentUser, friendUsername, uniqueCode }) {
-  return `
-    <h2>New Friend Request</h2>
-    <p>Hello! You have received a friend request from <b>${currentUser}</b> on ioChatApp.</p>
-    <p>If you recognize this user and want to accept their request, please use this unique code:</p>
-    <h3>${uniqueCode}</h3>
-    <p>To accept the request:</p>
-    <ol>
-        <li>Open ioChatApp</li>
-        <li>Go to "Add friends"</li>
-        <li>Enter the username <b>${currentUser}</b></li>
-        <li>Enter this unique code</li>
-    </ol>
-    <p>If you don't recognize this user, you can safely ignore this email.</p>`;
-}
+
 
 // Separate email sending function
 async function sendFriendRequestEmail({ to, template }) {

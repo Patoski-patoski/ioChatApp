@@ -21,6 +21,7 @@ async function verifyFriend(event) {
     const successText = document.getElementById('success-message');
     const errorText = document.getElementById('error-message');
     const username = document.getElementById('friend-username').value;
+ 
 
     try {
         const response = await fetch('/add_friend', {

@@ -30,12 +30,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    id: String,
     friends: [{
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         status: { type: String, enum: ['pending', 'accepted'], default: 'pending' },
         roomCode: { type: String }
     }],
-}, {timestamps: true});
+});
 
 const messageSchema = new mongoose.Schema({
     room: String,
@@ -43,7 +44,7 @@ const messageSchema = new mongoose.Schema({
     text: String,
     time: String,
     timestamp: Date
-}, { timestamps: true });
+});
 
 export const User = mongoose.model('User', userSchema);
 export const Message = mongoose.model('Message', messageSchema);

@@ -9,7 +9,7 @@ import nodemailer from 'nodemailer';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
 import { User } from '../models/users.js';
-import { checkFriendStatus, generateRoomCode, createFriendRequestEmailTemplate } from '../public/javascripts/constants.js';
+import { checkFriendStatus, generateRoomCode, createFriendRequestEmailTemplate } from '../public/javascripts/utils.js';
 
 const router = Router();
 
@@ -112,9 +112,9 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       });
     }
 
-    const { isPending, isAccepted } = await checkFriendStatus(currentUser, friendUser);
+    const { isPending, isPending_2, isAccepted } = await checkFriendStatus(currentUser, friendUser);
 
-    if (isPending || isAccepted) {
+    if (isPending || isPending_2 ||isAccepted) {
       req.session.friendUsername = friendUser.username;
       return res.status(HTTP_STATUS.OK).json({
         message: 'Already friends',
@@ -124,6 +124,8 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
     // Generate unique code
     const uniqueCode = generateRoomCode(currentUser._id.toString(), currentUser.username);
+    console.log(uniqueCode);
+    
 
     await Promise.all([
       await User.updateOne(
@@ -146,6 +148,9 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       ),
     ]);
 
+    console.log("After updating users");
+
+
     // Create email template
     const emailTemplate = createFriendRequestEmailTemplate({
       currentUser: currentUser.username,
@@ -160,8 +165,10 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
     });
 
 
+    req.session.friendUsername = friendUser.username;
     return res.status(HTTP_STATUS.OK).json({
-      message: "Friend request sent successfully"
+      message: "Friend request sent successfully",
+      redirect: '/rooms',
     });
 
   } catch (error) {

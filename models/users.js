@@ -46,6 +46,14 @@ const messageSchema = new mongoose.Schema({
     timestamp: Date
 });
 
+const sessionUserSchema = new mongoose.Schema({
+    id: String,
+    username: String,
+    room: String
+});
+
+
+export const SessionUser = mongoose.model('SessionUser', sessionUserSchema);
 export const User = mongoose.model('User', userSchema);
 export const Message = mongoose.model('Message', messageSchema);
 

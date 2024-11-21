@@ -2,7 +2,7 @@
 
 import { Server } from 'socket.io';
 import config from '../config.js';
-import { User, Message } from '../models/users.js';
+import { User, Message, SessionUser } from '../models/users.js';
 
 export const ADMIN = 'Admin';
 
@@ -17,26 +17,27 @@ const setupSocketIO = async (server) => {
     });
 
     io.on('connection', async (socket) => {
-        console.log(`User ${socket.id} connected`);
+        console.log(`Session User ${socket.id} connected`);
 
         socket.on('enterRoom', async ({ name, room }) => {
             
-            const existingUser = await User.findOne({ name, room });
-            console.log('existingUser', existingUser);
+            // const existingUser = await User.findOne({ name, room });
+            // console.log('existingUser', existingUser);
             
-            if (existingUser) {
-                await User.deleteMany({ name, room });
-            }
+            // if (existingUser) {
+            //     await User.deleteMany({ name, room });
+            // }
 
-            const prevUser = await User.findOne({ id: socket.id });
+            const prevUser = await SessionUser.findOne({ id: socket.id });
             console.log('prevUser', prevUser);
 
             if (prevUser) {
                 socket.leave(prevUser.room);
                 io.to(prevUser.room).emit('message', buildMsg(ADMIN, `${prevUser.name} has left the chat`));
-                await User.deleteOne({ id: socket.id });
+                // await User.deleteOne({ id: socket.id });
+                await prevUser.save();
                 io.to(prevUser.room).emit('userList', {
-                    users: await User.find({ room: prevUser.room })
+                    users: await SessionUser.find({ room: prevUser.room })
                 });
             }
 
@@ -49,23 +50,25 @@ const setupSocketIO = async (server) => {
             socket.emit('message', buildMsg(ADMIN, `You have started a conversation in ${user.room}`));
             socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is online`));
             io.to(user.room).emit('userList', {
-                users: await User.find({ room: user.room })
+                users: await SessionUser.find({ room: user.room })
             });
         });
 
         socket.on('disconnect', async () => {
-            const user = await User.findOneAndDelete({ id: socket.id });
+            const user = await SessionUser.findOneAndDelete({ id: socket.id });
             if (user) {
                 io.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is offline`));
                 io.to(user.room).emit('userList', {
-                    users: await User.find({ room: user.room })
+                    users: await SessionUser.find({ room: user.room })
                 });
             }
-            console.log(`User ${socket.id} disconnected`);
+            console.log(`SessionUser ${socket.id} disconnected`);
         });
 
         socket.on('message', async ({ name, text }) => {
-            const user = await User.findOne({ id: socket.id });
+            const user = await SessionUser.findOne({ id: socket.id });
+            console.log('on message user', user);
+            console.log('socket id', socket.id);
             if (user) {
                 const messageData = buildMsg(name, text);
                 await new Message({ room: user.room, ...messageData }).save();
@@ -74,7 +77,7 @@ const setupSocketIO = async (server) => {
         });
 
         socket.on('activity', async (name) => {
-            const user = await User.findOne({ id: socket.id });
+            const user = await SessionUser.findOne({ id: socket.id });
             if (user) {
                 socket.broadcast.to(user.room).emit('activity', name);
             }
@@ -98,8 +101,8 @@ function buildMsg(name, text) {
 }
 
 async function activateUser(id, name, room) {
-    const user = { id, name, room };
-    await User.updateOne({ id }, { $set: user }, { upsert: true });
+    const user = { id, username: name, room };
+    await SessionUser.updateOne({ id }, { $set: user }, { upsert: true });
     return user;
 }
 

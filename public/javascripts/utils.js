@@ -1,3 +1,5 @@
+import nodemailer from 'nodemailer';
+
 export async function checkFriendStatus(currentUser, friendUser) {
   const isPending = currentUser.friends.some(
     (friend) =>
@@ -35,4 +37,29 @@ export function createFriendRequestEmailTemplate({ currentUser, friendUsername, 
         <li>Enter this unique code</li>
     </ol>
     <p>If you don't recognize this user, you can safely ignore this email.</p>`;
+}
+
+
+// Separate email sending function
+export async function sendFriendRequestEmail({ to, template }) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
+    }
+  });
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject: 'ioChatApp Friend Request',
+      html: template
+    });
+  } catch (error) {
+    console.error('Email sending error:', error);
+    throw error;
+  }
 }

@@ -19,36 +19,29 @@ const setupSocketIO = async (server) => {
     io.on('connection', async (socket) => {
         console.log(`Session User ${socket.id} connected`);
 
-        socket.on('enterRoom', async ({ name, room }) => {
-            
-            // const existingUser = await User.findOne({ name, room });
-            // console.log('existingUser', existingUser);
-            
-            // if (existingUser) {
-            //     await User.deleteMany({ name, room });
-            // }
+        socket.on('enterRoom', async ({friendName, currentUser, room }) => {
+
+            const chatHistory = await Message.find({ room }).sort({ timestamp: 1 });
+            socket.emit('chatHistory', chatHistory);
 
             const prevUser = await SessionUser.findOne({ id: socket.id });
             console.log('prevUser', prevUser);
+            
 
             if (prevUser) {
                 socket.leave(prevUser.room);
-                io.to(prevUser.room).emit('message', buildMsg(ADMIN, `${prevUser.name} has left the chat`));
-                // await User.deleteOne({ id: socket.id });
+                io.to(prevUser.room).emit('message', buildMsg(ADMIN, `${currentUser} has left the chat`));
                 await prevUser.save();
                 io.to(prevUser.room).emit('userList', {
                     users: await SessionUser.find({ room: prevUser.room })
                 });
             }
 
-            const user = await activateUser(socket.id, name, room);
+            const user = await activateUser(socket.id, currentUser, room);
             socket.join(user.room);
 
-            const chatHistory = await Message.find({ room }).sort({ timestamp: 1 });
-            socket.emit('chatHistory', chatHistory);
-
             socket.emit('message', buildMsg(ADMIN, `You have started a conversation in ${user.room}`));
-            socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is online`));
+            socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.currentUser} is online`));
             io.to(user.room).emit('userList', {
                 users: await SessionUser.find({ room: user.room })
             });
@@ -56,8 +49,9 @@ const setupSocketIO = async (server) => {
 
         socket.on('disconnect', async () => {
             const user = await SessionUser.findOneAndDelete({ id: socket.id });
+            console.log('delete', user);
             if (user) {
-                io.to(user.room).emit('message', buildMsg(ADMIN, `${user.name} is offline`));
+                io.to(user.room).emit('message', buildMsg(ADMIN, `${user.currentUser} is offline`));
                 io.to(user.room).emit('userList', {
                     users: await SessionUser.find({ room: user.room })
                 });
@@ -67,8 +61,6 @@ const setupSocketIO = async (server) => {
 
         socket.on('message', async ({ name, text }) => {
             const user = await SessionUser.findOne({ id: socket.id });
-            console.log('on message user', user);
-            console.log('socket id', socket.id);
             if (user) {
                 const messageData = buildMsg(name, text);
                 await new Message({ room: user.room, ...messageData }).save();
@@ -100,8 +92,8 @@ function buildMsg(name, text) {
     };
 }
 
-async function activateUser(id, name, room) {
-    const user = { id, username: name, room };
+async function activateUser(id, currentUser, room) {
+    const user = { id, currentUser, room };
     await SessionUser.updateOne({ id }, { $set: user }, { upsert: true });
     return user;
 }

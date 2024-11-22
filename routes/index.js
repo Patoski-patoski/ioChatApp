@@ -5,11 +5,13 @@ import { Router } from 'express';
 import { validateSignupInput } from "../middleware/validation.js";
 import { validateLoginInput } from "../middleware/validation.js";
 import { redisClient } from './database.js';
-import nodemailer from 'nodemailer';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
 import { User } from '../models/users.js';
-import { checkFriendStatus, generateRoomCode, createFriendRequestEmailTemplate } from '../public/javascripts/utils.js';
+import { checkFriendStatus } from '../public/javascripts/utils.js';
+import { generateRoomCode, } from '../public/javascripts/utils.js';
+import { sendFriendRequestEmail } from '../public/javascripts/utils.js';
+import { createFriendRequestEmailTemplate } from '../public/javascripts/utils.js';
 
 const router = Router();
 
@@ -73,11 +75,12 @@ router.post('/login', validateLoginInput, async (req, res) => {
     // Create a session`
     req.session.userId = user._id;
     req.session.username = user.username;
+
     await redisClient.set(`user: ${user.username}: status`, 'online', {
       EX: 600, // Expiration in seconds
     });
     res.status(200).json(
-      { message: 'Login successful', username: user.username });
+      { message: 'Login successful', username: req.session.username });
 
 
   } catch (error) {
@@ -106,7 +109,7 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
     const currentUser = await User.findOne({ username: req.session.username });
     const friendUser = await User.findOne({ username: username });
 
-    if (!friendUser || !friendUser) {
+    if (!currentUser || !friendUser) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         error: "User not found",
       });
@@ -124,8 +127,6 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
     // Generate unique code
     const uniqueCode = generateRoomCode(currentUser._id.toString(), currentUser.username);
-    console.log(uniqueCode);
-    
 
     await Promise.all([
       await User.updateOne(
@@ -133,7 +134,8 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
         {
           $set: {
             "friends.$.status": "pending",
-            "friends.$.roomCode": uniqueCode
+            "friends.$.roomCode": uniqueCode,
+            "friends.$.userId": friendUser._id
           }
         }
       ),
@@ -147,8 +149,6 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
         }
       ),
     ]);
-
-    console.log("After updating users");
 
 
     // Create email template
@@ -166,9 +166,11 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
 
     req.session.friendUsername = friendUser.username;
+    
     return res.status(HTTP_STATUS.OK).json({
       message: "Friend request sent successfully",
       redirect: '/rooms',
+      username: req.session.username
     });
 
   } catch (error) {
@@ -179,31 +181,6 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
   }
 });
 
-
-
-// Separate email sending function
-async function sendFriendRequestEmail({ to, template }) {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to,
-      subject: 'ioChatApp Friend Request',
-      html: template
-    });
-  } catch (error) {
-    console.error('Email sending error:', error);
-    throw error;
-  }
-}
 
 router.get('/logout', isAuthenticated, async (req, res) => {
   if (req.session && req.session.userId) {

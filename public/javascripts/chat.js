@@ -12,6 +12,10 @@ const usersList = document.querySelector('.user-list');
 const roomList = document.querySelector('.room-list');
 const chatDisplay = document.querySelector('.chat-display');
 
+const currentUser = sessionStorage.getItem('currentUser') || 'You';
+nameInput.value.toLowerCase().trim()
+console.log(nameInput.value);
+
 // Add these functions at the beginning of chat.js
 const MAX_RECENT_ROOMS = 5;
 
@@ -94,8 +98,9 @@ function enterRoom(e) {
         saveRecentRoom(nameInput.value, chatRoom.value);
 
         socket.emit('enterRoom', {
-            name: nameInput.value,
-            room: chatRoom.value
+            friendName: nameInput.value,
+            room: chatRoom.value,
+            currentUser,
         });
     }
 }
@@ -116,7 +121,8 @@ function sendMessage(e) {
     e.preventDefault()
     if (nameInput.value && msgInput.value && chatRoom.value) {
         socket.emit('message', {
-            name: nameInput.value,
+            friendName: nameInput.value,
+            currentUser,
             text: msgInput.value
         })
         msgInput.value = "";
@@ -131,8 +137,9 @@ function loadRoom() {
         roomList.textContent += chatRoom.value;
         chatDisplay.innerHTML = '';
         socket.emit('enterRoom', {
-            name: nameInput.value,
+            friendName: nameInput.value,
             room: savedRoom,
+            currentUser
         });
     }
     msgInput.focus();

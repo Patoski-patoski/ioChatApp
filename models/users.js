@@ -30,10 +30,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    
     id: String,
+
     friends: [{
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        status: { type: String, enum: ['pending', 'accepted'], default: 'pending' },
+        status: {
+            type: String,
+            enum: ['pending', 'accepted'],
+            default: 'pending'
+        },
         roomCode: { type: String }
     }],
 });
@@ -48,7 +54,7 @@ const messageSchema = new mongoose.Schema({
 
 const sessionUserSchema = new mongoose.Schema({
     id: String,
-    username: String,
+    currentUser: { type: String, lowercase: true},
     room: String
 });
 

@@ -2,7 +2,8 @@
 
 async function handleLogin(event) {
     event.preventDefault();
-    const username = document.getElementById('username').value;
+    const username = document.getElementById('username').value.toLowerCase();
+    console.log(username);
     const password = document.getElementById('password').value;
     const errorText = document.getElementById('error-message');
 
@@ -14,6 +15,7 @@ async function handleLogin(event) {
             },
             body: JSON.stringify({ username, password }),
         });
+        sessionStorage.setItem('currentUser', username);
 
         const data = await response.json();
         if (response.ok) {

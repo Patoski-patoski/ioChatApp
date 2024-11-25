@@ -34,6 +34,7 @@ router.post('/signup', validateSignupInput, async (req, res, next) => {
 
     const existingUsername = await User.findOne({ username });
     const existingUserByEmail = await User.findOne({ email });
+    
     if (existingUsername || existingUserByEmail) {
       return res.status(HTTP_STATUS.CONFLICT).json(
         { error: 'User already exists. Please choose another.' });
@@ -158,54 +159,6 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       error: 'An error occurred processing the friend request'
     });
-  }
-});
-
-router.post('/update-friend-status', isAuthenticated, async (req, res) => { 
-  try {
-    const currentUser = await User.findOne({ username: req.session.username });
-    const friendUser = await User.findOne({ friendName: req.session.friendUsername });
-
-    if (!currentUser || !friendUser) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: "User not found"
-      });
-    }
-
-    // Update both users' friend status simultaneously
-    await Promise.all([
-      // Update current user's friend status
-
-      User.findOneAndUpdate(
-        {
-          username: currentUser.username,
-          'friends.userId': friendUser._id
-        },
-        {
-          $set: {'friend.$.status': 'accepted'}
-        }
-      ),
-      // Update friend's status
-      User.findOneAndUpdate(
-        {
-          username: friendUser.username,
-          'friends.userId': currentUser._id
-        },
-        {
-          $set: {'friend.$.status': 'accepted'}
-        }
-      )
-    ]);
-
-    return res.status(HTTP_STATUS.OK).json({
-      message: "Friend request is accepted!"
-    });
-  } catch (error) {
-    console.error('Status update error', error);
-    if(!res.headersSent)
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        error: "An error occured updating friend status"
-      });
   }
 });
 

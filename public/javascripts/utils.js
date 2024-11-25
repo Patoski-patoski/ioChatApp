@@ -1,4 +1,12 @@
 import nodemailer from 'nodemailer';
+import crypto from 'crypto'
+
+import {SALT_ROUNDS} from './constants.js'
+
+function generateRandomString(length) {
+  return crypto.randomBytes(length).toString('hex').slice(0, length);
+}
+
 
 export async function checkFriendStatus(currentUser, friendUser) {
   const isPending = currentUser.friends.some(
@@ -19,11 +27,12 @@ export async function checkFriendStatus(currentUser, friendUser) {
 }
 
 export function generateRoomCode(userId, username) {
-  return `${userId.slice(-7)}-${username}`;
+  console.log(`${userId.slice(-7)}-${generateRandomString(SALT_ROUNDS)}-${username}`);
+  return `${userId.slice(-7)}-${generateRandomString(SALT_ROUNDS)}-${username}`;
 }
 
 // Separate email template creation
-export function createFriendRequestEmailTemplate({ currentUser, friendUsername, uniqueCode }) {
+export function createFriendRequestEmailTemplate({ currentUser, _friendUsername, uniqueCode }) {
     return `
     <h2>New Friend Request</h2>
     <p>Hello! You have received a friend request from <b>${currentUser}</b> on ioChatApp.</p>
@@ -44,7 +53,7 @@ export function createFriendRequestEmailTemplate({ currentUser, friendUsername, 
 export async function sendFriendRequestEmail({ to, template }) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD

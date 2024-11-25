@@ -212,8 +212,7 @@ router.get('/add_friend', isAuthenticated, (req, res) => {
 router.get('/rooms', isAuthenticated, (req, res) => {
   if (req.session.friendUsername) {
     const friendUsername = req.session.friendUsername;
-    const code = req.session.userId.slice(-7);
-    const uniqueCode = `${code}-${req.session.username}`;
+    const uniqueCode = generateRoomCode(req.session.userId.toString(), req.session.username);
     const data = { friendUsername, uniqueCode };
     res.render('rooms', data);
   } else {

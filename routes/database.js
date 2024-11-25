@@ -46,7 +46,7 @@ redisClient.on('error', (error) => {
   console.error('Redis Connection Error:', error);
   setTimeout(() => {
     console.log('Attempting to reconnect to Redis...');
-    redisClient.connect();
+    // redisClient.connect();
   }, 5000); // retry after 5 seconds
 });
 

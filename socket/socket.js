@@ -79,17 +79,9 @@ const setupSocketIO = async (server) => {
                         { $set: { 'friends.$.status': 'accepted' } }
                     );
 
-                    if (currentUserUpdate.modifiedCount === 0 || friendUserUpdate.modifiedCount === 0) {
-                        throw new Error('Failed to update friend status');
-                    }
-                 
                 } catch (error) {
                     console.error(error);
-                    return {
-                        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-                        error: error.message
                     };
-                }
 
             }
 

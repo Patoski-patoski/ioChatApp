@@ -12,12 +12,61 @@ const usersList = document.querySelector('.user-list');
 const roomList = document.querySelector('.room-list');
 const chatDisplay = document.querySelector('.chat-display');
 
-const currentUser = sessionStorage.getItem('currentUser') || 'You';
+const currentUser = sessionStorage.getItem('currentUser');
 nameInput.value.toLowerCase().trim()
-console.log(nameInput.value);
 
 // Add these functions at the beginning of chat.js
 const MAX_RECENT_ROOMS = 5;
+
+// also modifies the existing enterRoom function to save recent rooms
+function enterRoom(e) {
+    e.preventDefault();
+    if (nameInput.value && chatRoom.value) {
+        sessionStorage.setItem('roomcode', chatRoom.value);
+        roomList.textContent += chatRoom.value;
+        chatDisplay.value = '';
+
+        // Save to recent rooms
+        saveRecentRoom(nameInput.value, chatRoom.value);
+
+        socket.emit('enterRoom', {
+            friendName: nameInput.value,
+            room: chatRoom.value,
+            currentUser,
+        });
+    }
+}
+
+function loadRoom() {
+    const savedRoom = sessionStorage.getItem('roomcode');
+    if (savedRoom) {
+        chatRoom.value = savedRoom;
+        roomList.textContent += chatRoom.value;
+        chatDisplay.innerHTML = '';
+        socket.emit('enterRoom', {
+            friendName: nameInput.value,
+            room: savedRoom,
+            currentUser
+        });
+    }
+    msgInput.focus();
+}
+
+function sendMessage(e) {
+    e.preventDefault();
+    console.log(nameInput.value);
+    console.log(msgInput.value);
+    console.log(chatRoom.value);
+    if (nameInput.value && msgInput.value && chatRoom.value) {
+        socket.emit('message', {
+            friendName: nameInput.value,
+            currentUser,
+            text: msgInput.value
+        })
+        msgInput.value = "";
+    }
+    msgInput.focus();
+}
 
 function saveRecentRoom(name, roomCode) {
     let recentRooms = JSON.parse(localStorage.getItem('recentRooms') || '[]');
@@ -86,24 +135,7 @@ function rejoinRoom(roomCode, friendName) {
     document.querySelector('.form-join').dispatchEvent(new Event('submit'));
 }
 
-// Modify the existing enterRoom function to save recent rooms
-function enterRoom(e) {
-    e.preventDefault();
-    if (nameInput.value && chatRoom.value) {
-        sessionStorage.setItem('roomcode', chatRoom.value);
-        roomList.textContent += chatRoom.value;
-        chatDisplay.value = '';
 
-        // Save to recent rooms
-        saveRecentRoom(nameInput.value, chatRoom.value);
-
-        socket.emit('enterRoom', {
-            friendName: nameInput.value,
-            room: chatRoom.value,
-            currentUser,
-        });
-    }
-}
 
 // Clean up event listeners when needed
 function cleanupRecentRoomsListeners() {
@@ -111,39 +143,12 @@ function cleanupRecentRoomsListeners() {
     recentRoomsList.removeEventListener('click', handleRecentRoomsClick);
 }
 
-// Add this to your window.addEventListener('load', ...) function
 window.addEventListener('load', () => {
     loadRoom();
     displayRecentRooms();
 });
 
-function sendMessage(e) {
-    e.preventDefault()
-    if (nameInput.value && msgInput.value && chatRoom.value) {
-        socket.emit('message', {
-            friendName: nameInput.value,
-            currentUser,
-            text: msgInput.value
-        })
-        msgInput.value = "";
-    }
-    msgInput.focus();
-}
 
-function loadRoom() {
-    const savedRoom = sessionStorage.getItem('roomcode');
-    if (savedRoom) {
-        chatRoom.value = savedRoom;
-        roomList.textContent += chatRoom.value;
-        chatDisplay.innerHTML = '';
-        socket.emit('enterRoom', {
-            friendName: nameInput.value,
-            room: savedRoom,
-            currentUser
-        });
-    }
-    msgInput.focus();
-}
 
 document.querySelector('.form-msg').addEventListener('submit', sendMessage);
 document.querySelector('.form-join').addEventListener('submit', enterRoom);
@@ -163,6 +168,8 @@ socket.on("message", (data) => {
 // Listen for messages 
 function displayMessage(data) {
     const { name, text, time } = data;
+    console.log('displaymessage name', name);
+    console.log('displaymessae text', text);
     const li = document.createElement('li');
     li.className = 'post';
 
@@ -172,7 +179,7 @@ function displayMessage(data) {
         li.innerHTML = `<div class="post__text">${text}</div>`;
     }
     // Messages from "You" (current user) aligned to the right
-    else if (name === nameInput.value) {
+    else if (name === currentUser) {
         li.classList.add('post--you');
         li.innerHTML = `<div class="post__header">
       <span class="post__header--time"><span style="font-weight: bold;">You   </span> ${time}</span>

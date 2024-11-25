@@ -25,8 +25,6 @@ const setupSocketIO = async (server) => {
             socket.emit('chatHistory', chatHistory);
 
             const prevUser = await SessionUser.findOne({ id: socket.id });
-            console.log('prevUser', prevUser);
-            
 
             if (prevUser) {
                 socket.leave(prevUser.room);
@@ -59,8 +57,10 @@ const setupSocketIO = async (server) => {
             console.log(`SessionUser ${socket.id} disconnected`);
         });
 
-        socket.on('message', async ({ name, text }) => {
+        socket.on('message', async ({ friendName, text, currentUser }) => {
             const user = await SessionUser.findOne({ id: socket.id });
+            const name = currentUser;
+            console.log("On message name", name);
             if (user) {
                 const messageData = buildMsg(name, text);
                 await new Message({ room: user.room, ...messageData }).save();
@@ -94,6 +94,11 @@ function buildMsg(name, text) {
 
 async function activateUser(id, currentUser, room) {
     const user = { id, currentUser, room };
+    console.log('activate user currentuser', currentUser);
+    console.log('user.currentuser', user.currentUser);
+    console.log('activate user id', id);
+    console.log('user.id', user.id);
+    
     await SessionUser.updateOne({ id }, { $set: user }, { upsert: true });
     return user;
 }

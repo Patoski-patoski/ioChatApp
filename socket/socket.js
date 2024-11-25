@@ -1,8 +1,7 @@
 // socket/socket.js
 
 import { Server } from 'socket.io';
-import config from '../config.js';
-import { User, Message, SessionUser } from '../models/users.js';
+import {User, Message, SessionUser } from '../models/Users.js';
 
 export const ADMIN = 'Admin';
 
@@ -19,8 +18,8 @@ const setupSocketIO = async (server) => {
     io.on('connection', async (socket) => {
         console.log(`Session User ${socket.id} connected`);
 
-        socket.on('enterRoom', async ({friendName, currentUser, room }) => {
-
+        socket.on('enterRoom', async ({ friendName, currentUser, room }) => {
+            
             const chatHistory = await Message.find({ room }).sort({ timestamp: 1 });
             socket.emit('chatHistory', chatHistory);
 
@@ -38,6 +37,62 @@ const setupSocketIO = async (server) => {
             const user = await activateUser(socket.id, currentUser, room);
             socket.join(user.room);
 
+            // Get number of clients in the room
+            const clients = io.sockets.adapter.rooms.get(user.room);
+
+            // If both users are in the room, trigger status update
+            if (clients && clients.size === 2) {
+                // Trigger status update for both users
+                socket.emit('update friend status', clients);
+                socket.to(user.room).emit('update friend status');
+
+                const [client_1, client_2] = [...clients];
+                try {
+                    const sessionUser_1 = await SessionUser.findOne({ id: client_1 });
+                    if (!sessionUser_1) {
+                        throw new Error("Session user not found");
+                    }
+                    const currentUser = await User.findOne({ username: sessionUser_1.currentUser });
+                    if (!currentUser) {
+                        throw new Error("Current user not found");
+                    }
+
+                    //  find the friend client/user
+                    const sessionUser_2 = await SessionUser.findOne({ id: client_2 });
+                    if (!sessionUser_2) {
+                        throw new Error("Session user not found");
+                    }
+                    const friendUser = await User.findOne({ username: sessionUser_2.currentUser });
+                    if (!friendUser) {
+                        throw new Error("Current user not found");
+                    }
+
+                    // Update first client/user
+                    const currentUserUpdate = await User.updateOne(
+                        { _id: currentUser._id, 'friends.userId': friendUser._id },
+                        { $set: { 'friends.$.status': 'accepted' } }
+                    );
+
+                    // Update second client/user
+                    const friendUserUpdate = await User.updateOne(
+                        { _id: friendUser._id, 'friends.userId': currentUser._id },
+                        { $set: { 'friends.$.status': 'accepted' } }
+                    );
+
+                    if (currentUserUpdate.modifiedCount === 0 || friendUserUpdate.modifiedCount === 0) {
+                        throw new Error('Failed to update friend status');
+                    }
+                 
+                } catch (error) {
+                    console.error(error);
+                    return {
+                        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+                        error: error.message
+                    };
+                }
+
+            }
+
             socket.emit('message', buildMsg(ADMIN, `You have started a conversation in ${user.room}`));
             socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.currentUser} is online`));
             io.to(user.room).emit('userList', {
@@ -47,7 +102,6 @@ const setupSocketIO = async (server) => {
 
         socket.on('disconnect', async () => {
             const user = await SessionUser.findOneAndDelete({ id: socket.id });
-            console.log('delete', user);
             if (user) {
                 io.to(user.room).emit('message', buildMsg(ADMIN, `${user.currentUser} is offline`));
                 io.to(user.room).emit('userList', {
@@ -60,7 +114,6 @@ const setupSocketIO = async (server) => {
         socket.on('message', async ({ friendName, text, currentUser }) => {
             const user = await SessionUser.findOne({ id: socket.id });
             const name = currentUser;
-            console.log("On message name", name);
             if (user) {
                 const messageData = buildMsg(name, text);
                 await new Message({ room: user.room, ...messageData }).save();
@@ -94,11 +147,6 @@ function buildMsg(name, text) {
 
 async function activateUser(id, currentUser, room) {
     const user = { id, currentUser, room };
-    console.log('activate user currentuser', currentUser);
-    console.log('user.currentuser', user.currentUser);
-    console.log('activate user id', id);
-    console.log('user.id', user.id);
-    
     await SessionUser.updateOne({ id }, { $set: user }, { upsert: true });
     return user;
 }

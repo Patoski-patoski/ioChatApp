@@ -7,8 +7,8 @@ import { validateLoginInput } from "../middleware/validation.js";
 import { redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
-import { User } from '../models/users.js';
-import { checkFriendStatus } from '../public/javascripts/utils.js';
+import { User } from '../models/Users.js';
+import {updateOne, checkFriendStatus } from '../public/javascripts/utils.js';
 import { generateRoomCode, } from '../public/javascripts/utils.js';
 import { sendFriendRequestEmail } from '../public/javascripts/utils.js';
 import { createFriendRequestEmailTemplate } from '../public/javascripts/utils.js';
@@ -32,10 +32,11 @@ router.post('/signup', validateSignupInput, async (req, res, next) => {
 
   try {
 
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
+    const existingUsername = await User.findOne({ username });
+    const existingUserByEmail = await User.findOne({ email });
+    if (existingUsername || existingUserByEmail) {
       return res.status(HTTP_STATUS.CONFLICT).json(
-        { error: 'Username already exists. Please choose another.' });
+        { error: 'User already exists. Please choose another.' });
     }
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     await User.create({
@@ -122,34 +123,14 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       return res.status(HTTP_STATUS.OK).json({
         message: 'Already friends',
         redirect: '/rooms',
+        username: req.session.username
       });
     }
 
     // Generate unique code
     const uniqueCode = generateRoomCode(currentUser._id.toString(), currentUser.username);
-
-    await Promise.all([
-      await User.updateOne(
-        { _id: currentUser._id, "friends.userId": friendUser._id },
-        {
-          $set: {
-            "friends.$.status": "pending",
-            "friends.$.roomCode": uniqueCode,
-            "friends.$.userId": friendUser._id
-          }
-        }
-      ),
-       await User.updateOne(
-        { _id: friendUser._id , "friends.userId": currentUser._id },
-        {
-          $set: {
-            "friends.$.status": "pending",
-            "friends.$.roomCode": uniqueCode
-          }
-        }
-      ),
-    ]);
-
+    // Update friends status
+    await updateOne(currentUser, friendUser, uniqueCode);
 
     // Create email template
     const emailTemplate = createFriendRequestEmailTemplate({
@@ -163,7 +144,6 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       to: friendUser.email,
       template: emailTemplate
     });
-
 
     req.session.friendUsername = friendUser.username;
     
@@ -181,6 +161,53 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
   }
 });
 
+router.post('/update-friend-status', isAuthenticated, async (req, res) => { 
+  try {
+    const currentUser = await User.findOne({ username: req.session.username });
+    const friendUser = await User.findOne({ friendName: req.session.friendUsername });
+
+    if (!currentUser || !friendUser) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        error: "User not found"
+      });
+    }
+
+    // Update both users' friend status simultaneously
+    await Promise.all([
+      // Update current user's friend status
+
+      User.findOneAndUpdate(
+        {
+          username: currentUser.username,
+          'friends.userId': friendUser._id
+        },
+        {
+          $set: {'friend.$.status': 'accepted'}
+        }
+      ),
+      // Update friend's status
+      User.findOneAndUpdate(
+        {
+          username: friendUser.username,
+          'friends.userId': currentUser._id
+        },
+        {
+          $set: {'friend.$.status': 'accepted'}
+        }
+      )
+    ]);
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: "Friend request is accepted!"
+    });
+  } catch (error) {
+    console.error('Status update error', error);
+    if(!res.headersSent)
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: "An error occured updating friend status"
+      });
+  }
+});
 
 router.get('/logout', isAuthenticated, async (req, res) => {
   if (req.session && req.session.userId) {

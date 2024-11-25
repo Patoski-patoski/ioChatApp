@@ -1,6 +1,5 @@
 // public/javascripts/chat.js
 
-// Initialize socket connection
 const socket = io();
 
 const msgInput = document.getElementById('message');
@@ -54,9 +53,6 @@ function loadRoom() {
 
 function sendMessage(e) {
     e.preventDefault();
-    console.log(nameInput.value);
-    console.log(msgInput.value);
-    console.log(chatRoom.value);
     if (nameInput.value && msgInput.value && chatRoom.value) {
         socket.emit('message', {
             friendName: nameInput.value,
@@ -168,8 +164,6 @@ socket.on("message", (data) => {
 // Listen for messages 
 function displayMessage(data) {
     const { name, text, time } = data;
-    console.log('displaymessage name', name);
-    console.log('displaymessae text', text);
     const li = document.createElement('li');
     li.className = 'post';
 

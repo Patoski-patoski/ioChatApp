@@ -72,3 +72,32 @@ export async function sendFriendRequestEmail({ to, template }) {
     throw error;
   }
 }
+
+export async function updateOne(currentUser, friendUser, uniqueCode) {
+  await Promise.all([
+    User.updateOne(
+      { _id: currentUser._id },
+      {
+        $push: {
+          friends: {
+            userId: friendUser._id,
+            status: "pending",
+            roomCode: uniqueCode
+          }
+        }
+      }
+    ),
+    User.updateOne(
+      { _id: friendUser._id },
+      {
+        $push: {
+          friends: {
+            userId: currentUser._id,
+            status: "pending",
+            roomCode: uniqueCode
+          }
+        }
+      }
+    )
+  ]);
+}

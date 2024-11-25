@@ -18,10 +18,10 @@ checkAuth();
 
 async function verifyFriend(event) {
     event.preventDefault();
+    const username = document.getElementById('friend-username').value;
+
     const successText = document.getElementById('success-message');
     const errorText = document.getElementById('error-message');
-    const username = document.getElementById('friend-username').value;
- 
 
     try {
         const response = await fetch('/add_friend', {
@@ -34,9 +34,13 @@ async function verifyFriend(event) {
         });
 
         const data = await response.json();
+        const currentUser = sessionStorage.setItem('currentUser', data.username);
+        console.log('currentUser', currentUser);
+
         if (response.ok) {
             errorText.textContent = '';
             successText.textContent = data.message;
+
 
             if (data.redirect) {
                 window.location.href = data.redirect;
@@ -47,7 +51,7 @@ async function verifyFriend(event) {
                 }, 2000);
             }
         } else {
-            errorText.textContent = data.error;
+            successText.textContent = data.error;
             setTimeout(() => {
                 errorText.textContent = '';
             }, 5000);
@@ -56,5 +60,25 @@ async function verifyFriend(event) {
         errorText.textContent = 'An error occurred. Please try again.';
     }
 }
+
+
+// export async function updateFriendStatus() {
+//     try {
+//         const response = await fetch('/update_friend_status', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Accept': 'application/json',
+//             }
+//         });
+
+//         const data = await response.json();
+//         console.log(data);
+//         if (!response.ok)
+//             console.error('Failed to update friend status: ', data.error);
+//     } catch (error) {
+//         console.error('Error updating friend status: ', error);
+//     }
+// }
 
 document.querySelector('.add-friend-form').addEventListener('submit', verifyFriend);

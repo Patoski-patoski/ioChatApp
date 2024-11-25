@@ -3,7 +3,6 @@
 async function handleLogin(event) {
     event.preventDefault();
     const username = document.getElementById('username').value.toLowerCase();
-    console.log(username);
     const password = document.getElementById('password').value;
     const errorText = document.getElementById('error-message');
 

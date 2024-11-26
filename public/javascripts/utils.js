@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
-import crypto from 'crypto'
-
-import {SALT_ROUNDS} from './constants.js'
+import crypto from 'crypto';
+import { User } from '../../models/Users.js'
+import {SALT_ROUNDS} from './constants.js';
 
 function generateRandomString(length) {
   return crypto.randomBytes(length).toString('hex').slice(0, length);

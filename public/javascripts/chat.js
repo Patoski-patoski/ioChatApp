@@ -145,7 +145,6 @@ window.addEventListener('load', () => {
 });
 
 
-
 document.querySelector('.form-msg').addEventListener('submit', sendMessage);
 document.querySelector('.form-join').addEventListener('submit', enterRoom);
 chatRoom.addEventListener('keypress', () => {
@@ -202,31 +201,12 @@ socket.on('chatHistory', (messages) => {
 });
 
 let activityTimer;
-socket.on("activity", (name) => {
-    activity.textContent = `${name} is typing...`
+socket.on("activity", () => {
+    activity.textContent = `${nameInput.value} is typing...`
 
     // Clear after 5 seconds 
     clearTimeout(activityTimer)
     activityTimer = setTimeout(() => {
-        activity.textContent = ""
+        activity.textContent = "";
     }, 5000)
 })
-
-socket.on('userList', ({ users }) => {
-    showUsers(users)
-})
-
-function showUsers(users) {
-    usersList.textContent = '';
-    if (users) {
-        usersList.innerHTML = `<em>Conversation in '${chatRoom.value}' between </em>`;
-        let count = 0;
-        users.forEach((user, i) => {
-            if (i == 0) {
-                usersList.innerHTML += user.name;
-            } else {
-                usersList.innerHTML += ' and ' + user.name;
-            }
-        })
-    }
-}

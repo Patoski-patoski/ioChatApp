@@ -29,9 +29,6 @@ const setupSocketIO = async (server) => {
                 socket.leave(prevUser.room);
                 io.to(prevUser.room).emit('message', buildMsg(ADMIN, `${currentUser} has left the chat`));
                 await prevUser.save();
-                io.to(prevUser.room).emit('userList', {
-                    users: await SessionUser.find({ room: prevUser.room })
-                });
             }
 
             const user = await activateUser(socket.id, currentUser, room);
@@ -68,13 +65,13 @@ const setupSocketIO = async (server) => {
                     }
 
                     // Update first client/user
-                    const currentUserUpdate = await User.updateOne(
+                    await User.updateOne(
                         { _id: currentUser._id, 'friends.userId': friendUser._id },
                         { $set: { 'friends.$.status': 'accepted' } }
                     );
 
                     // Update second client/user
-                    const friendUserUpdate = await User.updateOne(
+                    await User.updateOne(
                         { _id: friendUser._id, 'friends.userId': currentUser._id },
                         { $set: { 'friends.$.status': 'accepted' } }
                     );
@@ -87,18 +84,13 @@ const setupSocketIO = async (server) => {
 
             socket.emit('message', buildMsg(ADMIN, `You have started a conversation in ${user.room}`));
             socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.currentUser} is online`));
-            io.to(user.room).emit('userList', {
-                users: await SessionUser.find({ room: user.room })
-            });
         });
 
         socket.on('disconnect', async () => {
             const user = await SessionUser.findOneAndDelete({ id: socket.id });
             if (user) {
                 io.to(user.room).emit('message', buildMsg(ADMIN, `${user.currentUser} is offline`));
-                io.to(user.room).emit('userList', {
-                    users: await SessionUser.find({ room: user.room })
-                });
+               
             }
             console.log(`SessionUser ${socket.id} disconnected`);
         });

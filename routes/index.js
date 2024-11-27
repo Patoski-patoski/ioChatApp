@@ -189,21 +189,26 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 });
 
 router.get('/logout', isAuthenticated, async (req, res) => {
-  if (req.session && req.session.userId) {
-    await redisClient.set(
-      `user: ${req.session.username}: status`, 'online', {
-      EX: 15,
+ try {
+   if (req.session && req.session.userId) {
+     await redisClient.set(
+       `user: ${req.session.username}: status`, 'offline', {
+       EX: 15,
+     });
+     req.session.destroy((err) => {
+       if (err) {
+         return res.status(500).json({ message: "Logout failed" });
+       }
+     });
+   } else {
+       res.redirect('/login');
+   }
+ } catch (error) {
+    console.error(error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: 'An error occurred trying to logout'
     });
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.redirect('/login');
-    });
-  } else {
-    res.status(HTTP_STATUS.UNAUTHORIZED).json(
-      { message: "Not Authenticated" });
-  }
+ }
 });
 
 router.get('/add_friend', isAuthenticated, (req, res) => {

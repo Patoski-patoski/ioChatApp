@@ -132,7 +132,6 @@ function rejoinRoom(roomCode, friendName) {
 }
 
 
-
 // Clean up event listeners when needed
 function cleanupRecentRoomsListeners() {
     const recentRoomsList = document.querySelector('.recent-rooms-list');
@@ -147,11 +146,15 @@ window.addEventListener('load', () => {
 
 document.querySelector('.form-msg').addEventListener('submit', sendMessage);
 document.querySelector('.form-join').addEventListener('submit', enterRoom);
-chatRoom.addEventListener('keypress', () => {
+
+chatRoom.addEventListener('input', () => {
     nameInput.value = '';
 });
 
-msgInput.addEventListener('keypress', () => {
+msgInput.addEventListener('keydown', () => {
+    socket.emit('activity', nameInput.value);
+});
+msgInput.addEventListener('input', () => {
     socket.emit('activity', nameInput.value);
 });
 

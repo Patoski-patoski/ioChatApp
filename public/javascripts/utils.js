@@ -45,7 +45,9 @@ export function createFriendRequestEmailTemplate({ currentUser, _friendUsername,
         <li>Enter the username <b>${currentUser}</b></li>
         <li>Enter this unique code</li>
     </ol>
-    <p>If you don't recognize this user, you can safely ignore this email.</p>`;
+    <p>If you don't recognize this user, you can safely ignore this email.</p>
+    <b>Click link below to to Start chatting</b>
+    <a href="https://messaging-backend-system.onrender.com/add_friend">ioChatApp</a>`;
 }
 
 

@@ -84,7 +84,6 @@ router.post('/login', validateLoginInput, async (req, res) => {
     res.status(200).json(
       { message: 'Login successful', username: req.session.username });
 
-
   } catch (error) {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
       { error: 'An error occurred during login' });
@@ -94,64 +93,91 @@ router.post('/login', validateLoginInput, async (req, res) => {
 
 router.post('/add_friend', isAuthenticated, async (req, res) => {
   const { username } = req.body;
+  
 
   if (!username) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       error: "Friend username is required"
     });
   }
-  if (username === req.session.username) {
+  
+  if (username.toLowerCase().trim() === req.session.username.toLowerCase().trim()) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
-      error: "You cannot chat with yourself!"
+      error: "You cannot add yourself as a friend!"
     });
   }
 
   try {
+    const [currentUser, friendUser] = await Promise.all([
+      await User.findOne({ username: req.session.username }),
+      await User.findOne({ username: username.toLowerCase().trim() })
+    ]);
 
-    const currentUser = await User.findOne({ username: req.session.username });
-    const friendUser = await User.findOne({ username: username });
-
-    if (!currentUser || !friendUser) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: "User not found",
+    if (!currentUser) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        error: "Authentication failed. Please log in again."
       });
     }
 
+    if (!friendUser) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        error: "User not found. Please check the username",
+      });
+    }
+  if (username.toLowerCase().trim() === req.session.username.toLowerCase().trim()) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+      error: "You cannot add yourself as a friend!" 
+    });
+  }
     const { isPending, isPending_2, isAccepted } = await checkFriendStatus(currentUser, friendUser);
 
-    if (isPending || isPending_2 ||isAccepted) {
+    if (isAccepted) {
       req.session.friendUsername = friendUser.username;
       return res.status(HTTP_STATUS.OK).json({
-        message: 'Already friends',
+        message: 'You are already friends',
+        redirect: '/rooms',
+        username: req.session.username
+      });
+    }
+    if (isPending || isPending_2) {
+      req.session.friendUsername = friendUser.username;
+      return res.status(HTTP_STATUS.OK).json({
+        message: 'Friend request already exists',
         redirect: '/rooms',
         username: req.session.username
       });
     }
 
     // Generate unique code
-    const uniqueCode = generateRoomCode(currentUser._id.toString(), currentUser.username);
+    const uniqueCode = generateRoomCode(
+      currentUser._id.toString(), currentUser.username);
     // Update friends status
     await updateOne(currentUser, friendUser, uniqueCode);
 
     // Create email template
     const emailTemplate = createFriendRequestEmailTemplate({
       currentUser: currentUser.username,
-      username,
+      _friendUsername: friendUser.username,
       uniqueCode
     });
 
     // Send friend request email
-    await sendFriendRequestEmail({
-      to: friendUser.email,
-      template: emailTemplate
-    });
+    try {
+      await sendFriendRequestEmail({
+        to: friendUser.email,
+        template: emailTemplate
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+    }
 
     req.session.friendUsername = friendUser.username;
     
     return res.status(HTTP_STATUS.OK).json({
       message: "Friend request sent successfully",
       redirect: '/rooms',
-      username: req.session.username
+      username: req.session.username,
+      uniqueCode
     });
 
   } catch (error) {
@@ -180,7 +206,6 @@ router.get('/logout', isAuthenticated, async (req, res) => {
   }
 });
 
-
 router.get('/add_friend', isAuthenticated, (req, res) => {
   if (req.session.username) {
     res.render('add_friend', { username: req.session.username });
@@ -189,14 +214,49 @@ router.get('/add_friend', isAuthenticated, (req, res) => {
   }
 });
 
-router.get('/rooms', isAuthenticated, (req, res) => {
-  if (req.session.friendUsername) {
-    const friendUsername = req.session.friendUsername;
-    const uniqueCode = generateRoomCode(req.session.userId.toString(), req.session.username);
-    const data = { friendUsername, uniqueCode };
-    res.render('rooms', data);
-  } else {
-    res.redirect('/add_friend');
+router.get('/rooms', isAuthenticated, async (req, res) => {
+  try {
+    let uniqueCode = req.session.uniqueCode;
+
+    if (!req.session.friendUsername) {
+      return res.redirect('/add_friend');
+    }
+    const [currentUser, friendUser] = await Promise.all([
+      await User.findOne({ username: req.session.username }),
+      await User.findOne({ username: req.session.friendUsername })
+    ]);
+
+    if (!currentUser || !friendUser) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        error: "User not found"
+      });
+    }
+
+    // find the friends relationship
+    const friendRelationship = friendUser.friends.find(
+      friend => friend.userId.equals(currentUser._id)
+    );
+
+    if (friendRelationship) {
+      // check status of the relationship
+      if (friendRelationship.status === 'pending' ||
+        friendRelationship.status === 'accepted') {
+        uniqueCode = friendRelationship?.roomCode;
+      }
+    }
+
+    if (!uniqueCode) {
+      uniqueCode = generateRoomCode(
+        currentUser._id.toString(), currentUser.username);
+    }
+      const data = { friendUsername: req.session.friendUsername, uniqueCode };
+      res.render('rooms', data);
+
+  } catch (error) {
+    console.error('Rooms route error:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: 'An error occurred while preparing the chat room'
+    });
   }
 });
 

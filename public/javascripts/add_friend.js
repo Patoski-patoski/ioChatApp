@@ -35,12 +35,10 @@ async function verifyFriend(event) {
 
         const data = await response.json();
         const currentUser = sessionStorage.setItem('currentUser', data.username);
-        console.log('currentUser', currentUser);
 
         if (response.ok) {
             errorText.textContent = '';
             successText.textContent = data.message;
-
 
             if (data.redirect) {
                 window.location.href = data.redirect;

@@ -4,11 +4,10 @@ const socket = io();
 
 const msgInput = document.getElementById('message');
 const nameInput = document.getElementById('name');
-const chatRoom = document.getElementById('room');
+const chatRoom = document.getElementById('room-list');
 
 const activity = document.querySelector('.activity');
 const usersList = document.querySelector('.user-list');
-const roomList = document.querySelector('.room-list');
 const chatDisplay = document.querySelector('.chat-display');
 
 const currentUser = sessionStorage.getItem('currentUser');
@@ -19,18 +18,17 @@ const MAX_RECENT_ROOMS = 5;
 
 // also modifies the existing enterRoom function to save recent rooms
 function enterRoom(e) {
-    e.preventDefault();
-    if (nameInput.value && chatRoom.value) {
-        sessionStorage.setItem('roomcode', chatRoom.value);
-        roomList.textContent += chatRoom.value;
-        chatDisplay.value = '';
+    alert(chatRoom.innerText)
+    if (nameInput.value && chatRoom.innerText) {
+        sessionStorage.setItem('roomcode', chatRoom.innerText);
+        chatDisplay.innerText = '';
 
         // Save to recent rooms
-        saveRecentRoom(nameInput.value, chatRoom.value);
+        saveRecentRoom(nameInput.value, chatRoom.innerText);
 
         socket.emit('enterRoom', {
             friendName: nameInput.value,
-            room: chatRoom.value,
+            room: chatRoom.innerText,
             currentUser,
         });
     }
@@ -39,8 +37,7 @@ function enterRoom(e) {
 function loadRoom() {
     const savedRoom = sessionStorage.getItem('roomcode');
     if (savedRoom) {
-        chatRoom.value = savedRoom;
-        roomList.textContent += chatRoom.value;
+        chatRoom.innerText = savedRoom;
         chatDisplay.innerHTML = '';
         socket.emit('enterRoom', {
             friendName: nameInput.value,
@@ -53,7 +50,7 @@ function loadRoom() {
 
 function sendMessage(e) {
     e.preventDefault();
-    if (nameInput.value && msgInput.value && chatRoom.value) {
+    if (nameInput.value && msgInput.value && chatRoom.innerText) {
         socket.emit('message', {
             friendName: nameInput.value,
             currentUser,
@@ -127,7 +124,7 @@ function removeRecentRoom(roomCode) {
 
 function rejoinRoom(roomCode, friendName) {
     nameInput.value = friendName;
-    chatRoom.value = roomCode;
+    chatRoom.innerText = roomCode;
     document.querySelector('.form-join').dispatchEvent(new Event('submit'));
 }
 

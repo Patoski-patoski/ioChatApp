@@ -8,24 +8,6 @@ function generateRandomString(length) {
 }
 
 
-export async function checkFriendStatus(currentUser, friendUser) {
-  const isPending = currentUser.friends.some(
-    (friend) =>
-      friend.userId.equals(friendUser._id) && friend.status === 'pending'
-  );
-  const isPending_2 = friendUser.friends.some(
-    (friend) =>
-      friend.userId.equals(currentUser._id) && friend.status === 'pending'
-  );
-
-  const isAccepted = currentUser.friends.some(
-    (friend) =>
-      friend.userId.equals(friendUser._id) && friend.status === 'accepted'
-  );
-
-  return { isPending, isAccepted, isPending_2 };
-}
-
 export function generateRoomCode(userId, username) {
   console.log(`${userId.slice(-7)}-${generateRandomString(SALT_ROUNDS)}-${username}`);
   return `${userId.slice(-7)}-${generateRandomString(SALT_ROUNDS)}-${username}`;

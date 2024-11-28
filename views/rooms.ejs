@@ -138,22 +138,11 @@
           required
           value="<%= friendUsername %>"
         />
-        <label>
-          Handshake:
-          <input
-            type="text"
-            id="room"
-            size="10"
-            required
-            value="<%= uniqueCode %>"
-          />
-        </label>
-
-        <button id="join" type="submit">Chat</button>
+        <button id="join" type="submit">Start conversation</button>
       </form>
-      <!-- Add this right after the form-join form in the HTML -->
+
+      <h5 style="color: #9198a1;">Recent conversation</h5>
       <div class="recent-rooms">
-        <h5 style="color: #9198a1; margin: 1rem">Recent Handshakes</h5>
         <div class="recent-rooms-list"></div>
       </div>
 
@@ -161,9 +150,8 @@
       <ul class="chat-display"></ul>
 
       <!-- Additional chat information -->
-      <p class="user-list">Active users: <span id="user-count">0</span></p>
-      <p class="room-list">Handshake:</p>
-      <p class="activity">No recent activity</p>
+      <p class="user-list">Active chat code: <span id="room-list"><%= uniqueCode %></span></p>
+      <p class="activity"></p>
 
       <!-- Form to send messages -->
       <form class="form-msg">

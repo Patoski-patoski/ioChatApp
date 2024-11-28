@@ -8,7 +8,7 @@ import { redisClient } from './database.js';
 import { HTTP_STATUS, SALT_ROUNDS } from "../public/javascripts/constants.js";
 import isAuthenticated from "../middleware/auth.js";
 import { User } from '../models/Users.js';
-import {updateOne, checkFriendStatus } from '../public/javascripts/utils.js';
+import {updateOne } from '../public/javascripts/utils.js';
 import { generateRoomCode, } from '../public/javascripts/utils.js';
 import { sendFriendRequestEmail } from '../public/javascripts/utils.js';
 import { createFriendRequestEmailTemplate } from '../public/javascripts/utils.js';
@@ -94,10 +94,9 @@ router.post('/login', validateLoginInput, async (req, res) => {
 router.post('/add_friend', isAuthenticated, async (req, res) => {
   const { username } = req.body;
   
-
   if (!username) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
-      error: "Friend username is required"
+      error: "Friend username is required",
     });
   }
   
@@ -113,119 +112,80 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
       await User.findOne({ username: username.toLowerCase().trim() })
     ]);
 
-    if (!currentUser) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        error: "Authentication failed. Please log in again."
-      });
-    }
-
-    if (!friendUser) {
+    if (!friendUser || !currentUser) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: "User not found. Please check the username",
+        error: "User not found",
       });
     }
-  if (username.toLowerCase().trim() === req.session.username.toLowerCase().trim()) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
-      error: "You cannot add yourself as a friend!" 
-    });
-  }
-    const { isPending, isPending_2, isAccepted } = await checkFriendStatus(currentUser, friendUser);
 
-    if (isAccepted) {
+   // Check existing friend status
+    const currentFriendship = currentUser.friends.find((f) =>
+      f.userId.equals(friendUser._id)
+    );
+    const friendFriendship = friendUser.friends.find((f) =>
+      f.userId.equals(currentUser._id)
+    );
+
+    if (currentFriendship?.status === "accepted") {
       req.session.friendUsername = friendUser.username;
+      req.session.uniqueCode = currentFriendship.roomCode; // Ensure correct roomCode is stored
       return res.status(HTTP_STATUS.OK).json({
-        message: 'You are already friends',
-        redirect: '/rooms',
-        username: req.session.username
+        message: "You are already friends",
+        redirect: "/rooms",
       });
     }
-    if (isPending || isPending_2) {
+
+    if (currentFriendship?.status === "pending" || friendFriendship?.status === "pending") {
       req.session.friendUsername = friendUser.username;
+      req.session.uniqueCode = currentFriendship?.roomCode || friendFriendship?.roomCode;
       return res.status(HTTP_STATUS.OK).json({
-        message: 'Friend request already exists',
-        redirect: '/rooms',
-        username: req.session.username
+        message: "Friend request already exists",
+        redirect: "/rooms",
       });
     }
 
     // Generate unique code
     const uniqueCode = generateRoomCode(
       currentUser._id.toString(), currentUser.username);
+    
     // Update friends status
     await updateOne(currentUser, friendUser, uniqueCode);
 
     // Create email template
     const emailTemplate = createFriendRequestEmailTemplate({
       currentUser: currentUser.username,
-      _friendUsername: friendUser.username,
-      uniqueCode
+      friendUsername: friendUser.username,
+      uniqueCode,
     });
 
-    // Send friend request email
-    try {
-      await sendFriendRequestEmail({
-        to: friendUser.email,
-        template: emailTemplate
-      });
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-    }
+    // Send email notification
+    await sendFriendRequestEmail(
+      { to: friendUser.email, template: emailTemplate });
 
     req.session.friendUsername = friendUser.username;
+    req.session.uniqueCode = uniqueCode;
     
     return res.status(HTTP_STATUS.OK).json({
       message: "Friend request sent successfully",
       redirect: '/rooms',
-      username: req.session.username,
-      uniqueCode
     });
 
   } catch (error) {
     console.error(error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      error: 'An error occurred processing the friend request'
+      error: 'An error occurred while adding the friend'
     });
   }
 });
 
-router.get('/logout', isAuthenticated, async (req, res) => {
- try {
-   if (req.session && req.session.userId) {
-     await redisClient.set(
-       `user: ${req.session.username}: status`, 'offline', {
-       EX: 15,
-     });
-     req.session.destroy((err) => {
-       if (err) {
-         return res.status(500).json({ message: "Logout failed" });
-       }
-     });
-   } else {
-       res.redirect('/login');
-   }
- } catch (error) {
-    console.error(error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      error: 'An error occurred trying to logout'
-    });
- }
-});
-
-router.get('/add_friend', isAuthenticated, (req, res) => {
-  if (req.session.username) {
-    res.render('add_friend', { username: req.session.username });
-  } else {
-    res.redirect('/login');
-  }
-});
 
 router.get('/rooms', isAuthenticated, async (req, res) => {
   try {
-    let uniqueCode = req.session.uniqueCode;
 
     if (!req.session.friendUsername) {
       return res.redirect('/add_friend');
     }
+
     const [currentUser, friendUser] = await Promise.all([
       await User.findOne({ username: req.session.username }),
       await User.findOne({ username: req.session.friendUsername })
@@ -237,32 +197,72 @@ router.get('/rooms', isAuthenticated, async (req, res) => {
       });
     }
 
-    // find the friends relationship
-    const friendRelationship = friendUser.friends.find(
-      friend => friend.userId.equals(currentUser._id)
+    // Retrieve the friends relationship
+    const friendRelationship = currentUser.friends.find(
+      friend => friend.userId.equals(friendUser._id)
     );
 
-    if (friendRelationship) {
-      // check status of the relationship
-      if (friendRelationship.status === 'pending' ||
-        friendRelationship.status === 'accepted') {
-        uniqueCode = friendRelationship?.roomCode;
-      }
-    }
-
+    let uniqueCode = friendRelationship?.roomCode;
     if (!uniqueCode) {
+      // Fallback to generating a new unique code if none exists
       uniqueCode = generateRoomCode(
         currentUser._id.toString(), currentUser.username);
     }
-      const data = { friendUsername: req.session.friendUsername, uniqueCode };
-      res.render('rooms', data);
+
+    req.session.uniqueCode = uniqueCode;
+
+    const data = { friendUsername: friendUser.username, uniqueCode };
+    res.render('rooms', data);
 
   } catch (error) {
     console.error('Rooms route error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      error: 'An error occurred while preparing the chat room'
+      error: 'An error occurred while loading the chat room'
     });
   }
 });
+
+router.get('/logout', async (req, res) => {
+  try {
+    if (req.session && req.session.userId) {
+      await redisClient.set(
+        `user: ${req.session.username}: status`, 'offline', {
+        EX: 15,
+      });
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Error destroyingg session:', err);
+          return res.status(500).json({ error: "Logout failed" });
+        }
+        res.clearCookie('connect.sid', {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict', // Prevent CSRF
+        });
+
+        res.redirect('/login');
+      });
+    } else {
+      // If no active session
+      res.redirect('/login');
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      error: 'An error occurred trying to logout'
+    });
+  }
+});
+
+router.get('/add_friend', isAuthenticated, (req, res) => {
+  if (req.session.username) {
+    res.render('add_friend', { username: req.session.username });
+  } else {
+    res.redirect('/login');
+  }
+});
+
 
 export default router;

@@ -34,7 +34,7 @@ async function verifyFriend(event) {
         });
 
         const data = await response.json();
-        const currentUser = sessionStorage.setItem('currentUser', data.username);
+        sessionStorage.setItem('currentUser', data.username);
 
         if (response.ok) {
             errorText.textContent = '';
@@ -49,7 +49,7 @@ async function verifyFriend(event) {
                 }, 2000);
             }
         } else {
-            successText.textContent = data.error;
+            errorText.textContent = data.error;
             setTimeout(() => {
                 errorText.textContent = '';
             }, 5000);
@@ -58,25 +58,5 @@ async function verifyFriend(event) {
         errorText.textContent = 'An error occurred. Please try again.';
     }
 }
-
-
-// export async function updateFriendStatus() {
-//     try {
-//         const response = await fetch('/update_friend_status', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Accept': 'application/json',
-//             }
-//         });
-
-//         const data = await response.json();
-//         console.log(data);
-//         if (!response.ok)
-//             console.error('Failed to update friend status: ', data.error);
-//     } catch (error) {
-//         console.error('Error updating friend status: ', error);
-//     }
-// }
 
 document.querySelector('.add-friend-form').addEventListener('submit', verifyFriend);

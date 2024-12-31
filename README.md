@@ -1,17 +1,17 @@
-# messaging_backend_system
+# ioChatApp
 
 ## Express.js, JavaScript MongoDB, SOCKET.IO
 
 Creating a real-time application using Express, JavaScript, MongoDB, Redis and socket.io library.
 
-* A simple chat application demonstrating biderectional interaction.
+* A simple chat application demonstrating bidirectional interaction between registered users.
 
 ## License
 
 This project is licensed under the MIT License - see the [MIT License]( https://github.com/Patoski-patoski/messagin-backend-system/blob/main/LICENSE) file for details;
 
 
-## Real-Time Chat Application
+## ioChatApp: Real-Time Chat Application
 
 A robust real-time chat application built with Node.js, Express, Socket.IO, and MongoDB. Features secure user authentication, private chat rooms, real-time messaging, and persistent message history.
 

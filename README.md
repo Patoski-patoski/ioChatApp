@@ -13,7 +13,7 @@ This project is licensed under the MIT License - see the [MIT License]( https://
 
 ## ioChatApp: Real-Time Chat Application
 
-A robust real-time chat application built with Node.js, Express, Socket.IO, and MongoDB. Features secure user authentication, private chat rooms, real-time messaging, and persistent message history.
+A robust real-time chat application built with Node.js, Express, Socket.IO, and MongoDB. Features secure user authentication, private chat, real-time messaging, and persistent message history.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -22,7 +22,7 @@ A robust real-time chat application built with Node.js, Express, Socket.IO, and 
 
 * 🔐 Secure user authentication and session management
 * 💬 Real-time messaging with Socket.IO
-* 🏠 Multiple chat room support
+* 🏠 Multiple chat room support // Features suspended until further notice
 * 👥 User presence detection
 * ⌨️ Typing indicators
 * 📱 Responsive design

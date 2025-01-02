@@ -18,7 +18,6 @@ const MAX_RECENT_ROOMS = 5;
 
 // also modifies the existing enterRoom function to save recent rooms
 function enterRoom(e) {
-    alert(chatRoom.innerText)
     if (nameInput.value && chatRoom.innerText) {
         sessionStorage.setItem('roomcode', chatRoom.innerText);
         chatDisplay.innerText = '';
@@ -35,6 +34,7 @@ function enterRoom(e) {
 }
 
 function loadRoom() {
+    sessionStorage.setItem('roomcode', chatRoom.innerText);
     const savedRoom = sessionStorage.getItem('roomcode');
     if (savedRoom) {
         chatRoom.innerText = savedRoom;

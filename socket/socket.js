@@ -17,9 +17,7 @@ const setupSocketIO = async (server) => {
 
     io.on('connection', async (socket) => {
         console.log(`Session User ${socket.id} connected`);
-
-        socket.on('enterRoom', async ({ friendName, currentUser, room }) => {
-            
+        socket.on('enterRoom', async ({ friendName, currentUser, room }) => {    
             const chatHistory = await Message.find({ room }).sort({ timestamp: 1 });
             socket.emit('chatHistory', chatHistory);
 
@@ -83,7 +81,7 @@ const setupSocketIO = async (server) => {
             }
 
             socket.emit('message', buildMsg(ADMIN, `You have started a conversation in ${user.room}`));
-            socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${user.currentUser} is online`));
+            socket.broadcast.to(user.room).emit('message', buildMsg(ADMIN, `${currentUser} is online`));
         });
 
         socket.on('disconnect', async () => {

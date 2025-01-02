@@ -81,6 +81,7 @@ router.post('/login', validateLoginInput, async (req, res) => {
     await redisClient.set(`user: ${user.username}: status`, 'online', {
       EX: 600, // Expiration in seconds
     });
+
     res.status(200).json(
       { message: 'Login successful', username: req.session.username });
 
@@ -93,14 +94,17 @@ router.post('/login', validateLoginInput, async (req, res) => {
 
 router.post('/add_friend', isAuthenticated, async (req, res) => {
   const { username } = req.body;
-  
   if (!username) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       error: "Friend username is required",
     });
   }
-  
+
+
   if (username.toLowerCase().trim() === req.session.username.toLowerCase().trim()) {
+    console.log('Reached here!!!');
+      console.log('username', username.toLowerCase().trim());
+  console.log('session', req.session.username.toLowerCase().trim());
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       error: "You cannot add yourself as a friend!"
     });
@@ -240,7 +244,6 @@ router.get('/logout', async (req, res) => {
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict', // Prevent CSRF
         });
-
         res.redirect('/login');
       });
     } else {

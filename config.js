@@ -35,7 +35,7 @@ export default {
     server: {
         port: process.env.PORT || 3000,
         hostname: process.env.HOSTNAME,
-        trustProxy: isProd, //Enable behind a reverse proxy (heroku, vercel)
+        trustProxy: isProd, //Enable behind a reverse proxy (heroku, render, vercel)
     },
     session: {
         secret: getSessionSecret(),

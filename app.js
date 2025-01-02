@@ -84,5 +84,4 @@ async function initializeDatabases() {
 }
 
 initializeDatabases();
-
 export default app;

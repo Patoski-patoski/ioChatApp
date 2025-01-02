@@ -1,3 +1,4 @@
+// public/javascripts/utils.js
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import { User } from '../../models/Users.js'

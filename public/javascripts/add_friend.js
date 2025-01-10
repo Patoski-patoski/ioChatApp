@@ -34,16 +34,12 @@ async function verifyFriend(event) {
         });
 
         const data = await response.json();
-        // sessionStorage.setItem('currentUser', data.username);
-        // alert(sessionStorage.getItem('currentUser'));
-        // console.log(sessionStorage.getItem('currentUser'));
 
         if (response.ok) {
             errorText.textContent = '';
             successText.textContent = data.message;
 
             if (data.redirect) {
-                alert('data redirect', data.redirect);
                 window.location.href = data.redirect;
             } else {
                 console.log("Successful, waiting to redirect");
@@ -53,7 +49,6 @@ async function verifyFriend(event) {
             }
         } else {
             errorText.textContent = data.error;
-            alert('response', );
             setTimeout(() => {
                 errorText.textContent = '';
             }, 5000);

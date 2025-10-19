@@ -433,3 +433,45 @@ footer {
 .recent-room-item button:hover {
   color: #ff4444;
 }
+
+.friend-request-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #0d1117;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.friend-request-notification p {
+  margin: 0 0 10px;
+}
+
+.friend-request-notification .accept-btn {
+  background-color: #238636;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.friend-request-notification .accept-btn:hover {
+  background-color: #2ea043;
+}
+
+.friend-request-notification .decline-btn {
+  background-color: #d73a49;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.friend-request-notification .decline-btn:hover {
+  background-color: #b62331;
+}

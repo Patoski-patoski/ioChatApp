@@ -15,8 +15,30 @@ const setupSocketIO = async (server) => {
         }
     });
 
+    const userSockets = new Map();
+
     io.on('connection', async (socket) => {
         console.log(`Session User ${socket.id} connected`);
+
+        socket.on('register', (username) => {
+            userSockets.set(username, socket.id);
+            console.log(`User ${username} registered with socket ${socket.id}`);
+        });
+
+        socket.on('friendRequest', ({ from, to }) => {
+            const recipientSocketId = userSockets.get(to);
+            if (recipientSocketId) {
+                io.to(recipientSocketId).emit('newFriendRequest', { from });
+            }
+        });
+
+        socket.on('acceptFriendRequest', ({ from, to }) => {
+            const recipientSocketId = userSockets.get(to);
+            if (recipientSocketId) {
+                io.to(recipientSocketId).emit('friendRequestAccepted', { from });
+            }
+        });
+
         socket.on('enterRoom', async ({ friendName, currentUser, room }) => {    
             const chatHistory = await Message.find({ room }).sort({ timestamp: 1 });
             socket.emit('chatHistory', chatHistory);

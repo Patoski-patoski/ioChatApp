@@ -160,6 +160,34 @@ socket.on("message", (data) => {
     displayMessage(data);
 });
 
+socket.on('connect', () => {
+    socket.emit('register', currentUser);
+});
+
+socket.on('newFriendRequest', ({ from }) => {
+    displayFriendRequest(from);
+});
+
+function displayFriendRequest(from) {
+    const notification = document.createElement('div');
+    notification.className = 'friend-request-notification';
+    notification.innerHTML = `
+        <p>You have a new friend request from ${from}</p>
+        <button class="accept-btn">Accept</button>
+        <button class="decline-btn">Decline</button>
+    `;
+    document.body.appendChild(notification);
+
+    notification.querySelector('.accept-btn').addEventListener('click', () => {
+        socket.emit('acceptFriendRequest', { from, to: currentUser });
+        notification.remove();
+    });
+
+    notification.querySelector('.decline-btn').addEventListener('click', () => {
+        notification.remove();
+    });
+}
+
 // Listen for messages 
 function displayMessage(data) {
     const { name, text, time } = data;

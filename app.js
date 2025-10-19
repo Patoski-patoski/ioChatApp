@@ -55,6 +55,18 @@ async function initializeDatabases() {
       saveUninitialized: false,
     }));
 
+    const expresServer = app.listen((config.server.port), () => {
+      console.log(`Listening live from http://${config.server.hostname}:${config.server.port}`);
+    });
+
+    const io = setupSocketIO(expresServer);
+
+    // Middleware to attach io to the request object
+    app.use((req, res, next) => {
+      req.io = io;
+      next();
+    });
+
     app.use('/', indexRouter);
     app.use('/users', usersRouter);
 
@@ -62,20 +74,6 @@ async function initializeDatabases() {
     app.use(function (req, res, next) {
       next(createError(404, 'Resource not found'));
     });
-
-    app.use(function (err, req, res, next) {
-      res.locals.message = err.message;
-      res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-      res.status(err.status || 500);
-      res.render('error');
-    });
-
-    const expresServer = app.listen((config.server.port), () => {
-      console.log(`Listening live from http://${config.server.hostname}:${config.server.port}`);
-    });
-
-    setupSocketIO(expresServer);
 
   } catch (error) {
     console.error('Failed to connect to databases:', error);

@@ -166,6 +166,12 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
     await sendFriendRequestEmail(
       { to: friendUser.email, template: emailTemplate });
 
+    // Emit a friend request event to the friend user
+    req.io.emit('friendRequest', {
+      from: currentUser.username,
+      to: friendUser.username,
+    });
+
     req.session.friendUsername = friendUser.username;
     req.session.uniqueCode = uniqueCode;
     

@@ -127,38 +127,46 @@
       </div>
     </div>
 
-    <div id="notification-container"></div>    <div class="chat-container">      <header class="chat-header">        <h1><i class="fas fa-comments"></i>ioChatApp</h1>        <a href="/logout" class="btn">Logout</a>    <main>
-      <!-- Form to join the chat -->
-      <form class="form-join">
-        <input
-          type="text"
-          id="name"
-          maxlength="10"
-          size="10"
-          required
-          value="<%= friendUsername %>"
-        />
-        <button id="join" type="submit">Start conversation</button>
-      </form>
+    <div id="notification-container"></div>    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h4 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>Friends</span>
+                    </h4>
+                    <div id="friend-list" class="nav flex-column">
+                        <!-- Friends will be dynamically loaded here -->
+                    </div>
+                </div>
+            </nav>
 
-      <h5 style="color: #9198a1;">Recent conversation</h5>
-      <div class="recent-rooms">
-        <div class="recent-rooms-list"></div>
-      </div>
-
-      <!-- Display chat messages -->
-      <ul class="chat-display"></ul>
-
-      <!-- Additional chat information -->
-      <p class="user-list">Active chat code: <span id="room-list"><%= uniqueCode %></span></p>
-      <p class="activity"></p>
-
-      <!-- Form to send messages -->
-      <form class="form-msg">
-        <input type="text" id="message" placeholder="Your message" required />
-        <button type="submit">Send</button>
-      </form>
-    </main>
+            <!-- Main chat area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="chat-container">
+                    <header class="chat-header">
+                        <h1><i class="fas fa-comments"></i>ioChatApp</h1>
+                        <a href="/logout" class="btn">Logout</a>
+                    </header>
+                    <div class="chat-main">
+                        <div class="chat-sidebar">
+                            <h3><i class="fas fa-users"></i> Users</h3>
+                            <ul id="users"></ul>
+                        </div>
+                        <div class="chat-messages">
+                            <div class="chat-display"></div>
+                            <div class="chat-form-container">
+                                <form id="chat-form" class="form-msg">
+                                    <input id="message" type="text" placeholder="Enter Message" required autocomplete="off" />
+                                    <button class="btn"><i class="fas fa-paper-plane"></i> Send</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
 
     <!-- Bootstrap JS (Required for Modal) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

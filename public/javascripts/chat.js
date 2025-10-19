@@ -192,6 +192,54 @@ function displayFriendRequest(from) {
     });
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    loadFriends();
+    // other initialization that depends on the DOM
+});
+
+async function loadFriends() {
+    try {
+        const response = await fetch('/users/friends');
+        const friends = await response.json();
+        const friendList = document.getElementById('friend-list');
+        friendList.innerHTML = ''; // Clear existing list
+
+        friends.forEach(friend => {
+            const friendItem = document.createElement('a');
+            friendItem.className = 'nav-link text-white';
+            friendItem.href = '#';
+            friendItem.dataset.username = friend.username;
+            friendItem.dataset.roomcode = friend.roomCode;
+            friendItem.textContent = friend.username;
+            friendList.appendChild(friendItem);
+        });
+    } catch (error) {
+        console.error('Error loading friends:', error);
+    }
+}
+
+document.getElementById('friend-list').addEventListener('click', (e) => {
+    if (e.target.tagName === 'A') {
+        e.preventDefault();
+        const friendUsername = e.target.dataset.username;
+        const roomCode = e.target.dataset.roomcode;
+
+        // Update UI to show who we are chatting with
+        document.getElementById('name').value = friendUsername;
+        document.getElementById('room-list').innerText = roomCode;
+
+        // Clear previous chat messages
+        chatDisplay.innerHTML = '';
+
+        // Join the new chat room
+        socket.emit('enterRoom', {
+            friendName: friendUsername,
+            room: roomCode,
+            currentUser,
+        });
+    }
+});
+
 // Listen for messages 
 function displayMessage(data) {
     const { name, text, time } = data;

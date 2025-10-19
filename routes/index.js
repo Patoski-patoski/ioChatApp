@@ -191,39 +191,7 @@ router.post('/add_friend', isAuthenticated, async (req, res) => {
 
 router.get('/rooms', isAuthenticated, async (req, res) => {
   try {
-
-    if (!req.session.friendUsername) {
-      return res.redirect('/add_friend');
-    }
-
-    const [currentUser, friendUser] = await Promise.all([
-      await User.findOne({ username: req.session.username }),
-      await User.findOne({ username: req.session.friendUsername })
-    ]);
-
-    if (!currentUser || !friendUser) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        error: "User not found"
-      });
-    }
-
-    // Retrieve the friends relationship
-    const friendRelationship = currentUser.friends.find(
-      friend => friend.userId.equals(friendUser._id)
-    );
-
-    let uniqueCode = friendRelationship?.roomCode;
-    if (!uniqueCode) {
-      // Fallback to generating a new unique code if none exists
-      uniqueCode = generateRoomCode(
-        currentUser._id.toString(), currentUser.username);
-    }
-
-    req.session.uniqueCode = uniqueCode;
-
-    const data = { friendUsername: friendUser.username, uniqueCode };
-    res.render('rooms', data);
-
+    res.render('rooms', { username: req.session.username });
   } catch (error) {
     console.error('Rooms route error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({

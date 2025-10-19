@@ -32,4 +32,25 @@ router.get('/user-status/:userName', async (req, res) => {
   res.json({ status: status });
 });
 
+router.get('/friends', isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId).populate('friends.userId', 'username');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const acceptedFriends = user.friends
+      .filter(friend => friend.status === 'accepted')
+      .map(friend => ({
+        username: friend.userId.username,
+        roomCode: friend.roomCode,
+      }));
+
+    res.json(acceptedFriends);
+  } catch (error) {
+    console.error('Error fetching friends:', error);
+    res.status(500).json({ error: 'An error occurred while fetching friends' });
+  }
+});
+
 export default router;

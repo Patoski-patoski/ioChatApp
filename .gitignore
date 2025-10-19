@@ -3,3 +3,4 @@ node_modules
 bin
 .env.local
 .vercel
+resume.md

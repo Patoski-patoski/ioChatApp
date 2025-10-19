@@ -32,10 +32,34 @@ const setupSocketIO = async (server) => {
             }
         });
 
-        socket.on('acceptFriendRequest', ({ from, to }) => {
-            const recipientSocketId = userSockets.get(to);
-            if (recipientSocketId) {
-                io.to(recipientSocketId).emit('friendRequestAccepted', { from });
+        socket.on('acceptFriendRequest', async ({ from, to }) => {
+            try {
+                const [fromUser, toUser] = await Promise.all([
+                    User.findOne({ username: from }),
+                    User.findOne({ username: to })
+                ]);
+
+                if (!fromUser || !toUser) {
+                    // Handle user not found
+                    return;
+                }
+
+                // Update status for both users
+                await User.updateOne(
+                    { _id: fromUser._id, 'friends.userId': toUser._id },
+                    { $set: { 'friends.$.status': 'accepted' } }
+                );
+                await User.updateOne(
+                    { _id: toUser._id, 'friends.userId': fromUser._id },
+                    { $set: { 'friends.$.status': 'accepted' } }
+                );
+
+                const recipientSocketId = userSockets.get(from);
+                if (recipientSocketId) {
+                    io.to(recipientSocketId).emit('friendRequestAccepted', { from: to });
+                }
+            } catch (error) {
+                console.error('Error accepting friend request:', error);
             }
         });
 

@@ -168,6 +168,10 @@ socket.on('newFriendRequest', ({ from }) => {
     displayFriendRequest(from);
 });
 
+socket.on('friendRequestAccepted', ({ from }) => {
+    alert(`${from} accepted your friend request!`);
+});
+
 function displayFriendRequest(from) {
     const notification = document.createElement('div');
     notification.className = 'friend-request-notification';
